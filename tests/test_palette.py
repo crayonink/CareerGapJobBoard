@@ -6,7 +6,8 @@ noticing, because OKLCH lightness is perceptual and contrast is not.
 
 These tests parse the real tokens out of style.css and do the arithmetic, so
 changing a token either keeps the site readable or fails the build. They also
-pin the brief itself: the ground stays warm, and the state colours keep their hue.
+pin the brief itself: true black ink, zero radius, hard rules, and the acid
+kept out of anything that renders as text.
 """
 
 from __future__ import annotations
@@ -19,8 +20,8 @@ import pytest
 
 CSS = Path(__file__).resolve().parents[1] / "app" / "static" / "style.css"
 
-#: Hue axes, resolved so tokens written as oklch(... var(--sand)) can be read.
-HUES = {"--sand": 68.0, "--clay": 40.0}
+#: Hue axes, resolved so tokens written as oklch(... var(--acid)) can be read.
+HUES = {"--acid": 103.0}
 
 TOKEN_RE = re.compile(
     r"(--[a-z0-9-]+):\s*oklch\(([\d.]+)%\s+([\d.]+)\s+(var\(--[a-z]+\)|[\d.]+)\)"
@@ -98,40 +99,41 @@ def test_contrast(tokens, label, fg, bg, minimum):
     assert ratio >= minimum, f"{label}: {ratio:.2f}:1, needs {minimum}:1"
 
 
-#: The tokens that set the mood. A cold or neutral value in any of these means
-#: the warm palette has been half-reverted.
-WARM_GROUND = [
-    "--bg", "--bg-elevated", "--surface", "--surface-2", "--surface-3",
-    "--line", "--line-strong",
-]
-
-
-@pytest.mark.parametrize("token", WARM_GROUND)
-def test_the_ground_is_warm(token):
-    """The brief is warm and human. Publishing a career gap is an exposing
-    thing to do, and a cold white product UI makes it feel like filing a claim.
-    Chroma at or near zero here means someone reverted to grey."""
+def test_ink_is_true_black():
+    """Brutalist wants real black, not a soft charcoal. Anything above 0 here
+    means someone softened it back toward a product UI."""
     css = CSS.read_text(encoding="utf-8")
-    match = re.search(rf"{token}:\s*oklch\([\d.]+%\s+([\d.]+)", css)
-    assert match, f"{token} is not defined as an oklch() literal any more"
-    chroma = float(match.group(1))
-    assert chroma >= 0.008, f"{token} has chroma {chroma}; that reads as grey, not warm"
+    lightness = float(re.search(r"--text:\s*oklch\(([\d.]+)%", css).group(1))
+    assert lightness == 0, f"--text is L{lightness}%, not black"
 
 
-def test_hues_are_sand_and_clay():
+def test_nothing_is_rounded():
+    """Zero radius is the brief, and one stray non-zero token is enough to make
+    the whole thing look like a mistake rather than a choice."""
     css = CSS.read_text(encoding="utf-8")
-    sand = float(re.search(r"--sand:\s*([\d.]+)", css).group(1))
-    clay = float(re.search(r"--clay:\s*([\d.]+)", css).group(1))
-    # 20-100deg in OKLCH is the warm arc: red-orange through to gold.
-    assert 20 <= sand <= 100, f"--sand is {sand}deg, outside the warm arc"
-    assert 20 <= clay <= 100, f"--clay is {clay}deg, outside the warm arc"
+    block = css[css.index("--r-xs:"):css.index("--wrap:")]
+    radii = re.findall(r"--r[a-z-]*:\s*([^;]+);", block)
+    for value in radii:
+        assert value.strip() in {"0"}, f"radius token is {value.strip()}, not 0"
 
 
-def test_ink_is_not_pure_black():
-    """True black on cream reads as a hole punched in the paper."""
+def test_borders_are_hard_rules():
     css = CSS.read_text(encoding="utf-8")
-    chroma = float(re.search(r"--text:\s*oklch\([\d.]+%\s+([\d.]+)", css).group(1))
-    assert chroma > 0.01, f"--text chroma is {chroma}; warm ink needs some hue"
+    width = re.search(r"--bw:\s*(\d+)px", css)
+    assert width and int(width.group(1)) >= 2, "--bw should be a 2px+ ink rule"
+    # A 1px grey line anywhere undoes the language.
+    assert "1px solid var(--line)" not in css, "a 1px hairline border survived"
+
+
+def test_the_acid_is_a_background_not_text():
+    """The structural trap in this palette. --accent is used for link and pill
+    TEXT, so if the acid ever lands there it is yellow type on white. It has to
+    live in --accent-soft, which is only ever a background behind black."""
+    css = CSS.read_text(encoding="utf-8")
+    accent_chroma = float(re.search(r"--accent:\s*oklch\([\d.]+%\s+([\d.]+)", css).group(1))
+    soft_chroma = float(re.search(r"--accent-soft:\s*oklch\([\d.]+%\s+([\d.]+)", css).group(1))
+    assert accent_chroma == 0, f"--accent has chroma {accent_chroma}; it must stay ink"
+    assert soft_chroma > 0.1, f"--accent-soft has chroma {soft_chroma}; the acid is missing"
 
 
 def test_state_colours_keep_their_hue(tokens):
