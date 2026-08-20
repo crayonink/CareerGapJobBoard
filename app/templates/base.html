@@ -36,6 +36,23 @@
 </head>
 <body>
 
+{% set support = support_url() %}
+
+{#- The three promises, above everything. They are what the site is, so they
+    belong where somebody reads before deciding whether to scroll - not in a
+    footer most people never reach. This strip scrolls away; the nav below it
+    stays stuck. -#}
+<div class="topbar">
+  <div class="wrap">
+    <span>Free for candidates and employers</span>
+    <span>Every profile reviewed by a person</span>
+    <span>Contact details go only to verified employers</span>
+    {% if support %}
+    <a href="{{ support }}" rel="noopener">Buy me a coffee</a>
+    {% endif %}
+  </div>
+</div>
+
 <header class="site-header">
   <div class="wrap">
     <a class="brand" href="/">
@@ -53,16 +70,13 @@
 
 <footer class="site-footer">
   <div class="wrap">
-    <span>Free for candidates and employers.</span>
-    <span class="dot" aria-hidden="true">&bull;</span>
-    <span>Every profile is reviewed by a person before it goes live.</span>
-    <span class="dot" aria-hidden="true">&bull;</span>
-    <span>Contact details are released only to verified employers.</span>
-    {% set support = support_url() %}
-    {% if support %}
-    <span class="dot" aria-hidden="true">&bull;</span>
-    <a href="{{ support }}" rel="noopener">Buy me a coffee</a>
-    {% endif %}
+    <span class="foot-brand">CareerGapJobBoard</span>
+    <nav>
+      <a href="/browse">Browse candidates</a>
+      <a href="/submit">Add your profile</a>
+      <a href="/employer">For employers</a>
+      {% if support %}<a href="{{ support }}" rel="noopener">Buy me a coffee</a>{% endif %}
+    </nav>
   </div>
 </footer>
 

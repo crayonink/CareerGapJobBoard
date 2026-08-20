@@ -157,6 +157,43 @@
   .wrap { width: 100%; max-width: var(--wrap); margin-inline: auto; padding-inline: 24px; }
   .narrow { max-width: 760px; }
 
+  /* The promise strip. Acid block, hard rule under it, one line that scrolls
+     away - it is a statement, not navigation, so it does not stay stuck. */
+  .topbar {
+    background: var(--accent-soft);
+    border-bottom: var(--bw) solid var(--text);
+    color: var(--text);
+  }
+  .topbar .wrap {
+    display: flex;
+    align-items: center;
+    gap: 0 26px;
+    min-height: 38px;
+    padding-block: 7px;
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+    flex-wrap: wrap;
+  }
+  /* Hard slashes between the claims instead of floating bullets. */
+  .topbar .wrap > * + *::before {
+    content: "";
+    display: inline-block;
+    width: var(--bw); height: 11px;
+    margin-right: 26px;
+    vertical-align: -1px;
+    background: var(--text);
+  }
+  .topbar a {
+    color: var(--text);
+    text-decoration: underline;
+    text-decoration-thickness: var(--bw);
+    text-underline-offset: 3px;
+    margin-left: auto;
+  }
+  .topbar a:hover { background: var(--text); color: var(--accent-soft); text-decoration-color: transparent; }
+
   .site-header {
     position: sticky;
     top: 0;
@@ -195,15 +232,21 @@
   }
   .site-nav a:hover, .site-nav a.on { background: var(--accent-soft); box-shadow: var(--shadow-sm); }
 
+  /* The footer is just wayfinding now - the claims moved to the top strip. */
   .site-footer {
     margin-top: 96px;
     border-top: var(--bw) solid var(--line);
-    padding: 32px 0;
-    color: var(--text-faint);
-    font-size: 14px;
+    padding: 26px 0;
+    font-size: 13.5px;
   }
-  .site-footer .wrap { display: flex; gap: 10px 26px; flex-wrap: wrap; align-items: center; }
-  .site-footer .dot { color: var(--line-strong); }
+  .site-footer .wrap {
+    display: flex; gap: 14px 28px; flex-wrap: wrap;
+    align-items: center; justify-content: space-between;
+  }
+  .foot-brand { font-weight: 900; letter-spacing: 0.02em; text-transform: uppercase; }
+  .site-footer nav { display: flex; gap: 8px 22px; flex-wrap: wrap; }
+  .site-footer nav a { color: var(--text); text-decoration: none; font-weight: 600; }
+  .site-footer nav a:hover { text-decoration: underline; text-underline-offset: 3px; }
 }
 
 /* ========================================================================
@@ -817,6 +860,16 @@
 
   @media (max-width: 620px) {
     .wrap { padding-inline: 18px; }
+    .topbar .wrap {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+      white-space: nowrap;
+      gap: 0 18px;
+    }
+    .topbar .wrap::-webkit-scrollbar { display: none; }
+    .topbar .wrap > * + *::before { margin-right: 18px; }
+    .topbar a { margin-left: 0; }
     .bento { grid-template-columns: 1fr; }
     .cols2 { grid-template-columns: 1fr; }
     .site-nav a { padding: 7px 10px; font-size: 14px; }

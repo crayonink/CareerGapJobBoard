@@ -382,3 +382,26 @@ def test_the_ask_is_made_where_the_budget_is(client, monkeypatch):
     monkeypatch.setenv("SUPPORT_URL", "https://buymeacoffee.com/example")
     for path in ("/", "/employer"):
         assert 'class="support' in client.get(path).text
+
+
+def test_promises_are_at_the_top_not_the_footer(client):
+    """They are what the site is, so they sit above the fold rather than in a
+    footer most people never scroll to."""
+    body = client.get("/").text
+    top = body.index('class="topbar"')
+    header = body.index('class="site-header"')
+    footer = body.index('class="site-footer"')
+
+    for claim in (
+        "Free for candidates and employers",
+        "Every profile reviewed by a person",
+        "Contact details go only to verified employers",
+    ):
+        assert top < body.index(claim) < header, f"{claim!r} is not in the top strip"
+    assert header < footer
+
+
+def test_top_strip_is_on_every_page(client, session, tags):
+    c = make_candidate(session, tags)
+    for path in ("/", "/browse", "/submit", "/employer", f"/p/{c.slug}"):
+        assert 'class="topbar"' in client.get(path).text
