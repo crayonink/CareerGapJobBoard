@@ -4,13 +4,20 @@ Reverse job board. Candidates with employment gaps publish profiles; employers
 browse and reach out. FastAPI + SQLite, deployed on Railway.
 
 **Build step 1 of 5 is done**: models, migrations, the `/browse` filter layer,
-and the serialisation tiers that keep contact details private. No HTTP routes
-yet — those are steps 2–5.
+and the serialisation tiers that keep contact details private. Plus a minimal
+read-only JSON API so the deploy pipeline is real and verifiable — `/submit`,
+`/admin`, employer auth and the reveal gate are steps 2 and 4.
+
+Until those land there is deliberately **no HTTP route that writes to the
+database, and none that can return a candidate's contact details**. Two tests
+in [tests/test_api.py](tests/test_api.py) enforce exactly that, by walking the
+app's own route table.
 
 ## Layout
 
 | File | What lives there |
 |---|---|
+| [app/main.py](app/main.py) | ASGI entrypoint: `/health`, `/browse`, `/p/{slug}` |
 | [app/models.py](app/models.py) | `candidate`, `tag`, `proof_link`, `employer`, `contact_reveal` |
 | [app/enums.py](app/enums.py) | Controlled vocabularies + the gap-length buckets |
 | [app/schemas.py](app/schemas.py) | `BrowseFilters` and the three serialisation tiers |
@@ -30,9 +37,52 @@ alembic upgrade head
 python -m pytest -q
 ```
 
-`CGJB_DB` sets the SQLite path (default `careergap.db`). Alembic reads it from
-`app.db`, not `alembic.ini`, so a migration can't run against a different
-database than the app.
+```bash
+uvicorn app.main:app --reload
+```
+
+`CGJB_DB` sets the SQLite path. Alembic reads it from `app.db`, not
+`alembic.ini`, so a migration can't run against a different database than the
+app.
+
+## Routes
+
+| Route | Returns | Indexed |
+|---|---|---|
+| `GET /health` | Status, DB path, `storage_ephemeral`, whether any profile is live | no |
+| `GET /browse` | `BrowseResponse` — filtered, paged cards | no |
+| `GET /p/{slug}` | `CandidatePublic`, or 404 if not live | **yes** |
+
+Non-live profiles 404 rather than 403, so an unlisted profile is
+indistinguishable from one that never existed.
+
+## Deploying to Railway
+
+`railway.json` pins the builder and start command; there's a `Procfile` too, so
+it also works on anything Heroku-shaped:
+
+```
+alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+```
+
+Migrations run on boot, so a deploy that can't migrate fails loudly instead of
+serving a stale schema. Healthcheck is `/health`.
+
+### Mount a volume, or you will lose the board
+
+Railway's container filesystem is **ephemeral**. A SQLite file written to the
+app directory is destroyed on every redeploy and every restart.
+
+1. Add a Railway Volume mounted at `/data`
+2. Leave `CGJB_DB` unset (it defaults to `/data/careergap.db` on Railway), or
+   set it to another path inside the volume
+
+`app.db.storage_is_ephemeral()` detects this by checking whether the database's
+directory is its own mount point, logs a warning at startup, and reports it as
+`storage_ephemeral` in `/health` — because a board running happily on a disk
+the next redeploy will erase looks exactly like a healthy one until it doesn't.
+
+Do this before you hand-seed 20–30 profiles, not after.
 
 ## `/browse` filters
 
@@ -130,7 +180,7 @@ otherwise an employer re-reading their own shortlist pays twice.
 ## Next
 
 2. `/submit` form and `/admin` review queue — you need to be able to seed
-3. `/browse` and `/p/{slug}`
+3. `/browse` and `/p/{slug}` as HTML rather than JSON
 4. Employer auth and the reveal gate
 5. Landing page
 

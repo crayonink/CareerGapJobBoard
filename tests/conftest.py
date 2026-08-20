@@ -4,6 +4,7 @@ import datetime as dt
 
 import pytest
 from sqlalchemy import create_engine, event
+from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.db import Base
@@ -16,7 +17,15 @@ TODAY = dt.date(2026, 8, 20)
 
 @pytest.fixture()
 def session() -> Session:
-    engine = create_engine("sqlite+pysqlite:///:memory:")
+    # StaticPool + check_same_thread=False: TestClient runs the ASGI app in a
+    # worker thread, and an in-memory database only exists for the connection
+    # that created it. Without both, every API test gets a different empty DB
+    # or a cross-thread ProgrammingError.
+    engine = create_engine(
+        "sqlite+pysqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
 
     @event.listens_for(engine, "connect")
     def _fk(dbapi_connection, _record):
