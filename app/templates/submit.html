@@ -2,15 +2,15 @@
 {% block title %}Add your profile &mdash; CareerGapJobBoard{% endblock %}
 {% block body %}
 <div class="wrap narrow">
-  <form class="stack" method="post" action="/submit">
-    <h1 style="letter-spacing:-0.025em;margin-bottom:6px">Add your profile</h1>
-    <p class="count" style="margin-top:0">
+  <form class="form-page" method="post" action="/submit">
+    <h1>Add your profile</h1>
+    <p class="lead" style="margin-bottom:28px">
       Nothing goes live until a person has reviewed it. Your email and phone are
       never shown publicly &mdash; profiles display a first name and initial only.
     </p>
 
     {% if errors %}
-    <div class="errors">
+    <div class="banner error">
       <strong>Fix these first:</strong>
       <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
     </div>
@@ -70,14 +70,14 @@
         <label for="summary">About you (optional)</label>
         <textarea id="summary" name="summary" maxlength="800">{{ v.summary }}</textarea>
       </div>
-      <div class="field inline">
+      <label class="checkline">
         <input type="checkbox" id="open_to_remote" name="open_to_remote" value="true" {% if v.open_to_remote %}checked{% endif %}>
-        <label for="open_to_remote">Open to remote work</label>
-      </div>
-      <div class="field inline">
+        <span>Open to remote work</span>
+      </label>
+      <label class="checkline">
         <input type="checkbox" id="open_to_relocate" name="open_to_relocate" value="true" {% if v.open_to_relocate %}checked{% endif %}>
-        <label for="open_to_relocate">Willing to relocate</label>
-      </div>
+        <span>Willing to relocate</span>
+      </label>
     </fieldset>
 
     <fieldset>
@@ -115,7 +115,7 @@
 
     <fieldset>
       <legend>Proof &mdash; at least one link</legend>
-      <p class="hint" style="margin-top:0">
+      <p class="hint" style="margin:-4px 0 16px">
         A repo, a piece of writing, a freelance client, a course certificate, a
         business you ran. This is the part that changes how the gap reads.
       </p>
@@ -128,7 +128,7 @@
         </div>
         <div class="field">
           <label for="proof_url_{{ i }}">Link</label>
-          <div style="display:flex;gap:8px">
+          <div class="inline-row">
             <input type="url" id="proof_url_{{ i }}" name="proof_url" maxlength="500" placeholder="https://">
             <select name="proof_kind" style="max-width:130px">
               {% for value, label in proof_kinds %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
@@ -154,10 +154,10 @@
           <input type="number" id="expected_ctc" name="expected_ctc" min="0" value="{{ v.expected_ctc }}">
         </div>
       </div>
-      <div class="field inline">
+      <label class="checkline">
         <input type="checkbox" id="open_to_trial" name="open_to_trial" value="true" {% if v.open_to_trial %}checked{% endif %}>
-        <label for="open_to_trial">Open to a paid short-term trial</label>
-      </div>
+        <span>Open to a paid short-term trial</span>
+      </label>
       <div class="field">
         <label for="flexibility_note">Anything about how you want to work (optional)</label>
         <span class="hint">Your own words. Max 200 characters.</span>
@@ -165,7 +165,7 @@
       </div>
     </fieldset>
 
-    <button class="btn" type="submit">Submit for review</button>
+    <button class="btn lg" type="submit">Submit for review</button>
   </form>
 </div>
 {% endblock %}

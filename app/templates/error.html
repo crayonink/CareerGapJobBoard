@@ -1,11 +1,9 @@
 {% extends "base.html" %}
 {% block title %}{{ code }} &mdash; CareerGapJobBoard{% endblock %}
 {% block body %}
-<div class="wrap narrow" style="padding:72px 20px 88px">
-  <h1 style="letter-spacing:-0.025em;font-size:34px;margin-bottom:8px">
-    {% if code == 404 %}Nothing here.{% else %}Something went wrong.{% endif %}
-  </h1>
-  <p class="lead" style="color:var(--muted);font-size:18px">
+<div class="wrap narrow centered">
+  <h1>{% if code == 404 %}Nothing here.{% else %}Something went wrong.{% endif %}</h1>
+  <p class="lead">
     {% if code == 404 %}
       That page or profile does not exist &mdash; or it is not live. Profiles
       that are paused or still in review look exactly like ones that never

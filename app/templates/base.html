@@ -3,26 +3,63 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#ffffff">
 <title>{% block title %}CareerGapJobBoard{% endblock %}</title>
 {% block meta %}{% endblock %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap">
 <link rel="stylesheet" href="/static/style.css">
+
+{#- Speculation Rules: the browser prefetches on hover-intent and fully
+    prerenders profile pages, so a server-rendered MPA navigates instantly.
+    /admin is excluded - prerendering pages behind auth is not free. -#}
+<script type="speculationrules">
+{
+  "prefetch": [{
+    "where": { "and": [
+      { "href_matches": "/*" },
+      { "not": { "href_matches": "/admin*" } },
+      { "not": { "href_matches": "/api*" } }
+    ]},
+    "eagerness": "moderate"
+  }],
+  "prerender": [{
+    "where": { "href_matches": "/p/*" },
+    "eagerness": "moderate"
+  }]
+}
+</script>
 </head>
 <body>
-<header class="site">
+
+<header class="site-header">
   <div class="wrap">
-    <a class="brand" href="/">CareerGapJobBoard</a>
-    <nav>
-      <a href="/browse" class="{% if nav == 'browse' %}on{% endif %}">Browse candidates</a>
-      <a href="/submit" class="{% if nav == 'submit' %}on{% endif %}">Add your profile</a>
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">CG</span>
+      CareerGapJobBoard
+    </a>
+    <nav class="site-nav">
+      <a href="/browse" {% if nav == 'browse' %}class="on" aria-current="page"{% endif %}>Browse</a>
+      <a href="/submit" {% if nav == 'submit' %}class="on" aria-current="page"{% endif %}>Add your profile</a>
     </nav>
   </div>
 </header>
+
 <main>{% block body %}{% endblock %}</main>
-<footer class="site">
+
+<footer class="site-footer">
   <div class="wrap">
     <span>Free for candidates and employers.</span>
-    <span>Contact details are shown only to verified employers.</span>
+    <span class="dot" aria-hidden="true">&bull;</span>
+    <span>Every profile is reviewed by a person before it goes live.</span>
+    <span class="dot" aria-hidden="true">&bull;</span>
+    <span>Contact details are released only to verified employers.</span>
   </div>
 </footer>
+
 </body>
 </html>

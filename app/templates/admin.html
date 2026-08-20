@@ -1,90 +1,120 @@
 {% extends "base.html" %}
 {% block title %}Review queue &mdash; CareerGapJobBoard{% endblock %}
 {% block body %}
-<div class="wrap" style="padding:28px 20px 64px">
+
+<div class="wrap" style="padding:36px 24px 24px">
+
   <div class="results-head">
     <h1>Review queue</h1>
-    <span class="count">{{ pending|length }} waiting &middot; {{ live_count }} live</span>
+    <span class="muted">{{ pending|length }} waiting &middot; {{ live_count }} live</span>
   </div>
 
-  <p class="count">
+  <p class="muted" style="margin-bottom:24px;max-width:70ch">
     Nothing reaches the board without passing through here. Approving sets the
-    profile live; requesting changes sends it back to the candidate with a note.
+    profile live and is where free text becomes canonical &mdash; the slugs you
+    type are the filter values employers get.
   </p>
 
   {% for c in pending %}
-  <article class="queue-item">
-    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
-      <h3 style="margin:0;font-size:17px">{{ c.full_name }}</h3>
+  <article class="queue-item reveal">
+    <div class="queue-head">
+      <h3>{{ c.full_name }}</h3>
       <span class="status-pill">{{ c.status.value }}</span>
-      <span class="count">{{ c.email }}{% if c.phone %} &middot; {{ c.phone }}{% endif %}</span>
+      <span class="muted">{{ c.email }}{% if c.phone %} &middot; {{ c.phone }}{% endif %}</span>
     </div>
-    <p class="head-line" style="margin:6px 0 10px">{{ c.headline }}</p>
+    <p class="muted" style="margin:2px 0 14px;font-size:15px">{{ c.headline }}</p>
 
-    <div class="meta">
-      <span>{{ c.city }}</span>
-      <span>Wants: <b>{{ c.role_sought }}</b></span>
-      <span><b>{{ c.years_prior_experience }} yr</b> prior</span>
-      <span>Gap: <b>{{ c.gap_months }} mo</b>{% if c.gap_end is none %} &middot; ongoing{% endif %}</span>
-      <span>Notice: <b>{{ c.notice_period_days }}d</b></span>
+    <div class="metastrip">
+      <span class="pill">{{ c.city }}</span>
+      <span class="pill">Wants <b>{{ c.role_sought }}</b></span>
+      <span class="pill"><b>{{ c.years_prior_experience }} yr</b> prior</span>
+      <span class="pill gap">Gap <b>{{ c.gap_months }} mo</b>{% if c.gap_end is none %} &middot; ongoing{% endif %}</span>
+      <span class="pill">Notice <b>{{ c.notice_period_days }}d</b></span>
+      {% if c.open_to_trial %}<span class="pill good">Trial ok</span>{% endif %}
     </div>
 
     {% if c.gap_activity %}
-    <p style="margin:12px 0 0"><strong>During the gap:</strong> {{ c.gap_activity }}</p>
+    <p style="margin:14px 0 0;font-size:15px"><strong>During the gap:</strong> {{ c.gap_activity }}</p>
     {% endif %}
 
-    <p style="margin:10px 0 0">
-      <strong>Proof links ({{ c.proof_links|length }}):</strong>
-      {% if c.proof_links %}
-      <ul class="proofs" style="margin-top:8px">
-        {% for p in c.proof_links %}
-        <li>
-          <div class="kind">{{ p.kind.value }}</div>
-          <a href="{{ p.url }}" rel="nofollow noopener" target="_blank">{{ p.label }}</a>
-        </li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      <span style="color:#b23c3c">none &mdash; should not have been accepted</span>
-      {% endif %}
+    {% if c.proof_links %}
+    <ul class="proofs" style="margin-top:14px">
+      {% for p in c.proof_links %}
+      <li>
+        <div class="kind">{{ p.kind.value }}</div>
+        <a href="{{ p.url }}" rel="nofollow noopener" target="_blank">{{ p.label }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="banner error" style="margin-top:14px">
+      No proof links &mdash; this should not have been accepted.
     </p>
+    {% endif %}
 
     <div class="acts">
       <form method="post" action="/admin/{{ c.id }}/approve">
-        <input type="text" name="role_slug" placeholder="role slug" value="{{ c.role_sought_slug or '' }}" required>
-        <input type="text" name="tags" placeholder="tag slugs, comma separated" value="{{ tag_string(c) }}">
-        <button class="btn small" type="submit">Approve &amp; publish</button>
+        <input type="text" name="role_slug" placeholder="role slug"
+               value="{{ c.role_sought_slug or '' }}" required aria-label="Role slug">
+        <input type="text" name="tags" placeholder="tag slugs, comma separated"
+               value="{{ tag_string(c) }}" aria-label="Tag slugs">
+        <button class="btn sm" type="submit">Approve &amp; publish</button>
       </form>
       <form method="post" action="/admin/{{ c.id }}/changes">
-        <input type="text" name="note" placeholder="What needs fixing" required>
-        <button class="btn small plain" type="submit">Request changes</button>
+        <input type="text" name="note" placeholder="What needs fixing" required
+               aria-label="Change request note">
+        <button class="btn sm ghost" type="submit">Request changes</button>
       </form>
     </div>
   </article>
   {% else %}
-  <div class="empty">Queue is empty.</div>
+  <div class="empty">
+    <h3>Queue is empty.</h3>
+    <p>Nothing waiting for review.</p>
+  </div>
   {% endfor %}
 
   {% if live %}
-  <h2 style="font-size:15px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-top:40px">Live profiles</h2>
+  <h2 class="section-label">Live profiles</h2>
   {% for c in live %}
   <article class="queue-item">
-    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
-      <h3 style="margin:0;font-size:16px"><a href="/p/{{ c.slug }}">{{ c.full_name }}</a></h3>
-      <span class="status-pill">live</span>
-      <span class="count">{{ c.headline }}</span>
+    <div class="queue-head">
+      <h3><a href="/p/{{ c.slug }}">{{ c.full_name }}</a></h3>
+      <span class="status-pill live">live</span>
+      <span class="muted">{{ c.headline }}</span>
     </div>
     <div class="acts">
       <form method="post" action="/admin/{{ c.id }}/pause">
-        <button class="btn small plain" type="submit">Pause</button>
+        <button class="btn sm ghost" type="submit">Pause</button>
       </form>
-      <form method="post" action="/admin/{{ c.id }}/delete"
-            onsubmit="return confirm('Delete this profile and everything attached to it? This cannot be undone.')">
-        <button class="btn small danger" type="submit">Delete</button>
-      </form>
+      {#- Native dialog rather than confirm(): styleable, animated, and it does
+          not freeze the main thread. Invoker Commands drive it declaratively
+          where supported; the onclick is a fallback and feature-detects so the
+          two cannot both fire (showModal on an open dialog throws). -#}
+      <button class="btn sm danger" type="button"
+              commandfor="del-{{ c.id }}" command="show-modal"
+              onclick="if (!('command' in this)) document.getElementById('del-{{ c.id }}').showModal()">
+        Delete
+      </button>
+      <dialog id="del-{{ c.id }}">
+        <h3>Delete this profile?</h3>
+        <p>
+          {{ c.full_name }}&rsquo;s profile, proof links, tags and any CV file
+          are removed for good. This cannot be undone.
+        </p>
+        <div class="acts">
+          <button class="btn sm ghost" type="button"
+                  commandfor="del-{{ c.id }}" command="close"
+                  onclick="if (!('command' in this)) this.closest('dialog').close()">Cancel</button>
+          <form method="post" action="/admin/{{ c.id }}/delete">
+            <button class="btn sm danger" type="submit">Delete permanently</button>
+          </form>
+        </div>
+      </dialog>
     </div>
   </article>
   {% endfor %}
   {% endif %}
 </div>
+
 {% endblock %}

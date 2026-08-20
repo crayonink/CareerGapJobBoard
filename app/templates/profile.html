@@ -1,10 +1,20 @@
 {% extends "base.html" %}
 {% block title %}{{ c.public_name }} &mdash; {{ c.headline }}{% endblock %}
-{% block meta %}<meta name="description" content="{{ c.headline }} &middot; {{ c.years_prior_experience }} years before a {{ c.gap.length_label }} career gap.">{% endblock %}
+{% block meta %}<meta name="description" content="{{ c.headline }}. {{ c.years_prior_experience }} years before a {{ c.gap.length_label }} career gap, in {{ c.city }}.">{% endblock %}
 {% block body %}
-<div class="wrap narrow profile">
-  <h1>{{ c.public_name }}</h1>
-  <p class="head-line">{{ c.headline }}</p>
+
+{% set parts = c.public_name.split() %}
+{% set mark = parts[0][0]|upper ~ (parts[-1][0]|upper if parts|length > 1 else '') %}
+
+<div class="wrap narrow">
+
+  <header class="profile-head">
+    <span class="avatar" aria-hidden="true">{{ mark }}</span>
+    <div>
+      <h1>{{ c.public_name }}</h1>
+      <p class="headline">{{ c.headline }}</p>
+    </div>
+  </header>
 
   <div class="factgrid">
     <div class="fact"><span>Looking for</span><b>{{ c.role_sought }}</b></div>
@@ -19,30 +29,30 @@
     </div>
     <div class="fact">
       <span>Notice period</span>
-      <b>{{ 'Immediate' if c.notice_period_days == 0 else c.notice_period_days ~ ' days' }}</b>
+      <b>{% if c.notice_period_days == 0 %}Available now{% else %}{{ c.notice_period_days }} days{% endif %}</b>
     </div>
     {% if c.expected_ctc %}
-    <div class="fact"><span>Looking for (annual)</span><b>&#8377;{{ '{:,}'.format(c.expected_ctc) }}</b></div>
+    <div class="fact"><span>Looking for, annual</span><b>&#8377;{{ '{:,}'.format(c.expected_ctc) }}</b></div>
     {% endif %}
   </div>
 
   {% if c.summary %}
-  <section class="block">
+  <section class="block reveal">
     <h2>About</h2>
     <p>{{ c.summary }}</p>
   </section>
   {% endif %}
 
-  <section class="block">
-    <h2>The gap &mdash; {{ c.gap.start }}{% if c.gap.end %} to {{ c.gap.end }}{% else %} to now{% endif %}</h2>
+  <section class="block reveal">
+    <h2>The gap &mdash; {{ c.gap.start }} to {{ c.gap.end or 'now' }}</h2>
     {% if c.gap.reason %}
-    <p class="count">Reason given: {{ c.gap.reason.value.replace('_', ' ') }}</p>
+    <p class="muted" style="margin-bottom:10px">Reason given: {{ c.gap.reason.value.replace('_', ' ') }}</p>
     {% endif %}
     {% if c.gap_activity %}<p>{{ c.gap_activity }}</p>{% endif %}
   </section>
 
   {% if c.proof_links %}
-  <section class="block">
+  <section class="block reveal">
     <h2>What they did during it</h2>
     <ul class="proofs">
       {% for p in c.proof_links %}
@@ -56,23 +66,33 @@
   {% endif %}
 
   {% if c.tags %}
-  <section class="block">
+  <section class="block reveal">
     <h2>Skills</h2>
-    <div class="tags">{% for t in c.tags %}<span class="tag">{{ t.label }}</span>{% endfor %}</div>
+    <div class="tagrow">{% for t in c.tags %}<span class="tag">{{ t.label }}</span>{% endfor %}</div>
   </section>
   {% endif %}
 
-  {% if c.open_to_trial or c.flexibility_note %}
-  <section class="block">
+  {% if c.open_to_trial or c.flexibility_note or c.open_to_relocate %}
+  <section class="block reveal">
     <h2>Working arrangements</h2>
-    {% if c.open_to_trial %}<p>Open to a paid short-term trial.</p>{% endif %}
+    <div class="metastrip" style="margin-bottom:12px">
+      {% if c.open_to_trial %}<span class="pill good">Open to a paid short-term trial</span>{% endif %}
+      {% if c.open_to_relocate %}<span class="pill">Willing to relocate</span>{% endif %}
+    </div>
     {% if c.flexibility_note %}<p>{{ c.flexibility_note }}</p>{% endif %}
   </section>
   {% endif %}
 
-  <section class="block">
+  <section class="block reveal">
     <h2>Contact</h2>
-    <div class="contact-gate">
+    <div class="gate">
+      <div class="lockmark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="10" rx="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
       <p>
         Contact details{% if c.has_resume %} and CV{% endif %} are released to
         verified employers only, and every release is logged.
@@ -81,6 +101,7 @@
     </div>
   </section>
 
-  <p><a href="/browse">&larr; Back to all candidates</a></p>
+  <p style="margin-bottom:0"><a href="/browse">&larr; Back to all candidates</a></p>
 </div>
+
 {% endblock %}

@@ -1,32 +1,97 @@
 {% extends "base.html" %}
+{% block meta %}<meta name="description" content="A job board in reverse. People with employment gaps publish what they did during the break, and employers come looking.">{% endblock %}
 {% block body %}
-<div class="wrap hero">
-  <h1>A career gap is a fact, not a disqualification.</h1>
+
+<section class="wrap hero">
+  <span class="eyebrow"><span class="pip" aria-hidden="true"></span> Free for both sides</span>
+  <h1>A career gap is a fact, <em>not a disqualification.</em></h1>
   <p class="lead">
-    This is a job board in reverse. People with employment gaps publish what they
-    did during the break &mdash; the repos, the courses, the freelance work, the
-    business they ran &mdash; and employers come looking. No applications into a
-    void, no algorithm quietly filing you under &ldquo;unexplained gap&rdquo;.
+    This is a job board in reverse. People with employment gaps publish what
+    they did during the break &mdash; the repos, the courses, the freelance
+    work, the business they ran &mdash; and employers come looking. No
+    applications into a void, no filter quietly binning you for an unexplained
+    year.
   </p>
   <div class="cta-row">
-    <a class="btn" href="/submit">Add your profile</a>
-    <a class="btn ghost" href="/browse">Browse {{ live_count }} candidate{{ '' if live_count == 1 else 's' }}</a>
+    <a class="btn lg" href="/submit">
+      Add your profile
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14M13 6l6 6-6 6"/>
+      </svg>
+    </a>
+    <a class="btn lg ghost" href="/browse">Browse {{ live_count }} candidate{{ '' if live_count == 1 else 's' }}</a>
   </div>
-</div>
-<div class="wrap">
-  <div class="pillars">
-    <div class="pillar">
+</section>
+
+<section class="wrap">
+  <div class="bento">
+    <article class="tile wide reveal">
+      <div class="tile-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/>
+          <path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>
+        </svg>
+      </div>
       <h3>The gap is a field, not a hole</h3>
-      <p>Length, and what happened during it, with links that prove it. Every profile needs at least one.</p>
-    </div>
-    <div class="pillar">
+      <p>
+        Length, and what happened during it, with links that prove it. Every
+        profile needs at least one before it can even be submitted &mdash; a
+        repo, a client, a certificate, a business.
+      </p>
+    </article>
+
+    <article class="tile wide reveal">
+      <div class="tile-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6 9 17l-5-5"/>
+        </svg>
+      </div>
       <h3>Reviewed before it goes live</h3>
-      <p>Every profile is read by a human first. No half-finished entries, so the board stays worth browsing.</p>
-    </div>
-    <div class="pillar">
-      <h3>Your contact details stay yours</h3>
-      <p>Profiles are public; your email, phone and CV are released only to a verified employer, and every release is logged.</p>
-    </div>
+      <p>
+        Every profile is read by a person first. No half-finished entries, no
+        auto-published noise &mdash; which is what keeps the board worth
+        opening a second time.
+      </p>
+    </article>
+
+    <article class="tile reveal">
+      <div class="tile-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="10" rx="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h3>Your details stay yours</h3>
+      <p>Profiles show a first name and initial. Email, phone and CV go only to a verified employer.</p>
+    </article>
+
+    <article class="tile reveal">
+      <div class="tile-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18M7 12h10M10 18h4"/>
+        </svg>
+      </div>
+      <h3>Filter on length, never on reason</h3>
+      <p>Employers filter by skills, gap length and notice period. Why you took the break is never a search field.</p>
+    </article>
+
+    <article class="tile reveal">
+      <div class="tile-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20v-6M12 20l-3-3M12 20l3-3"/>
+          <path d="M4 10a8 8 0 1 1 16 0"/>
+        </svg>
+      </div>
+      <h3>No ranking, no paid slots</h3>
+      <p>One order: recently updated. Nothing to game, and no reason to re-save your profile every morning.</p>
+    </article>
   </div>
-</div>
+</section>
+
 {% endblock %}

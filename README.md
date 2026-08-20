@@ -49,8 +49,25 @@ app.
 
 ## Pages
 
-Server-rendered Jinja — no build step, no client-side framework. The site is
-five pages and three of them are lists.
+Server-rendered Jinja — no build step, no client-side framework, no JS beyond
+two feature-detected `onclick` fallbacks. The modern platform does the work a
+framework used to:
+
+| Feature | What it buys |
+|---|---|
+| Speculation Rules | Hover-prefetch, and profile pages fully prerendered — an MPA that navigates instantly |
+| `@view-transition` | Cross-document morph between pages; the sticky header keeps its identity |
+| `animation-timeline: view()` | Scroll-driven reveals with no IntersectionObserver, and they reverse on scroll-up |
+| `@property` | A conic border that actually rotates, because `--angle` is a registered type |
+| `@container` | Cards drop low-value pills when *their column* is narrow, not the viewport |
+| `@starting-style` + `allow-discrete` | The delete `<dialog>` animates in and out |
+| `field-sizing: content` | Textareas grow with what's typed |
+| `:user-invalid` | Validation styling that waits until you've left the field |
+| `content-visibility` | Long result lists skip layout until near the viewport |
+| `oklch` + `color-mix` | One `--hue` token drives the whole palette |
+
+Light only, and `color-scheme: light` is pinned so form controls and scrollbars
+don't flip on a machine set to dark.
 
 | Route | What it is | Indexed |
 |---|---|---|

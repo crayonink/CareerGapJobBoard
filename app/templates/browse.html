@@ -1,39 +1,55 @@
 {% extends "base.html" %}
 {% block title %}Browse candidates &mdash; CareerGapJobBoard{% endblock %}
+{% block meta %}<meta name="description" content="Browse candidates returning from a career break. Filter by skills, gap length, location and notice period.">{% endblock %}
 {% block body %}
-<div class="wrap browse">
+
+{% macro initials(name) -%}
+{{ name.split()[0][0]|upper }}{{ name.split()[-1][0]|upper if name.split()|length > 1 else '' }}
+{%- endmacro %}
+
+<div class="wrap browse-grid">
 
   <form class="filters" method="get" action="/browse">
-    <h2>Filters</h2>
+    <div class="filters-head">
+      <h2>Filters</h2>
+      {% if is_filtered %}<a href="/browse">Clear all</a>{% endif %}
+    </div>
 
+    {% if all_tags %}
     <div class="fgroup">
       <strong>Skills</strong>
-      {% for t in all_tags %}
-      <label>
-        <input type="checkbox" name="tags" value="{{ t.slug }}"
-               {% if t.slug in f.tags %}checked{% endif %}> {{ t.label }}
-      </label>
-      {% else %}
-      <span class="count">No skills recorded yet.</span>
-      {% endfor %}
+      <div class="chips">
+        {% for t in all_tags %}
+        <label class="chip">
+          <input type="checkbox" name="tags" value="{{ t.slug }}"
+                 {% if t.slug in f.tags %}checked{% endif %}>
+          {{ t.label }}
+        </label>
+        {% endfor %}
+      </div>
     </div>
+    {% endif %}
 
     <div class="fgroup">
       <strong>Gap length</strong>
-      {% for value, label in gap_buckets %}
-      <label>
-        <input type="checkbox" name="gap_bucket" value="{{ value }}"
-               {% if value in selected_buckets %}checked{% endif %}> {{ label }}
-      </label>
-      {% endfor %}
+      <div class="chips">
+        {% for value, label in gap_buckets %}
+        <label class="chip">
+          <input type="checkbox" name="gap_bucket" value="{{ value }}"
+                 {% if value in selected_buckets %}checked{% endif %}>
+          {{ label }}
+        </label>
+        {% endfor %}
+      </div>
     </div>
 
     <div class="fgroup">
       <strong>Location</strong>
       <input type="text" name="city" placeholder="City" value="{{ f.city or '' }}">
-      <label style="margin-top:8px">
-        <input type="checkbox" name="open_to_remote" value="true"
-               {% if f.open_to_remote %}checked{% endif %}> Open to remote
+      <label class="switch">
+        <input type="checkbox" name="open_to_remote" value="true" {% if f.open_to_remote %}checked{% endif %}>
+        <span class="track" aria-hidden="true"></span>
+        <span>Open to remote</span>
       </label>
     </div>
 
@@ -41,70 +57,92 @@
       <strong>Experience before the gap</strong>
       <div class="frow">
         <input type="number" name="min_years" min="0" max="50" placeholder="Min"
-               value="{{ f.min_years if f.min_years is not none else '' }}">
+               value="{{ f.min_years if f.min_years is not none else '' }}"
+               aria-label="Minimum years of prior experience">
         <input type="number" name="max_years" min="0" max="50" placeholder="Max"
-               value="{{ f.max_years if f.max_years is not none else '' }}">
+               value="{{ f.max_years if f.max_years is not none else '' }}"
+               aria-label="Maximum years of prior experience">
       </div>
     </div>
 
     <div class="fgroup">
       <strong>Availability</strong>
-      <input type="number" name="max_notice_days" min="0" max="365" placeholder="Max notice (days)"
-             value="{{ f.max_notice_days if f.max_notice_days is not none else '' }}">
-      <label style="margin-top:8px">
-        <input type="checkbox" name="open_to_trial" value="true"
-               {% if f.open_to_trial %}checked{% endif %}> Open to a paid trial
+      <input type="number" name="max_notice_days" min="0" max="365" placeholder="Max notice, days"
+             value="{{ f.max_notice_days if f.max_notice_days is not none else '' }}"
+             aria-label="Maximum notice period in days">
+      <label class="switch">
+        <input type="checkbox" name="open_to_trial" value="true" {% if f.open_to_trial %}checked{% endif %}>
+        <span class="track" aria-hidden="true"></span>
+        <span>Open to a paid trial</span>
       </label>
     </div>
 
     <div class="fgroup">
-      <button class="btn small" type="submit">Apply filters</button>
-      <a class="btn small plain" href="/browse" style="margin-left:6px">Clear</a>
+      <button class="btn sm" type="submit">Apply filters</button>
     </div>
   </form>
 
-  <div class="results">
+  <div>
     <div class="results-head">
       <h1>Candidates</h1>
-      <span class="count">{{ total }} profile{{ '' if total == 1 else 's' }}{% if is_filtered %} match your filters{% endif %}</span>
+      <span class="muted">
+        {{ total }} profile{{ '' if total == 1 else 's' }}{% if is_filtered %} matching{% endif %}
+      </span>
     </div>
 
-    {% for c in results %}
-    <article class="card">
-      <h3><a href="/p/{{ c.slug }}">{{ c.public_name }}</a></h3>
-      <p class="head-line">{{ c.headline }}</p>
-      <div class="meta">
-        <span><b>{{ c.years_prior_experience }} yr</b> before the gap</span>
-        <span>Gap: <b>{{ c.gap.length_label }}</b>{% if c.gap.ongoing %} &middot; ongoing{% endif %}</span>
-        <span>{{ c.city }}{% if c.open_to_remote %} &middot; remote ok{% endif %}</span>
-        <span>Notice: <b>{{ 'immediate' if c.notice_period_days == 0 else c.notice_period_days ~ ' days' }}</b></span>
-        {% if c.proof_link_count %}
-        <span class="proofmark">{{ c.proof_link_count }} proof link{{ '' if c.proof_link_count == 1 else 's' }}</span>
+    <div class="results-list">
+      {% for c in results %}
+      <a class="card reveal" href="/p/{{ c.slug }}">
+        <div class="card-top">
+          <span class="avatar" aria-hidden="true">{{ initials(c.public_name) }}</span>
+          <div>
+            <h3>{{ c.public_name }}</h3>
+            <p class="headline">{{ c.headline }}</p>
+          </div>
+        </div>
+
+        <div class="metastrip">
+          <span class="pill gap">
+            Gap <b>{{ c.gap.length_label }}</b>{% if c.gap.ongoing %} &middot; ongoing{% endif %}
+          </span>
+          <span class="pill"><b>{{ c.years_prior_experience }} yr</b> before it</span>
+          <span class="pill">{{ c.city }}{% if c.open_to_remote %} &middot; remote ok{% endif %}</span>
+          <span class="pill optional">
+            {% if c.notice_period_days == 0 %}<b>Available now</b>{% else %}Notice <b>{{ c.notice_period_days }}d</b>{% endif %}
+          </span>
+          {% if c.proof_link_count %}
+          <span class="pill proof">
+            <b>{{ c.proof_link_count }}</b> proof link{{ '' if c.proof_link_count == 1 else 's' }}
+          </span>
+          {% endif %}
+          {% if c.open_to_trial %}<span class="pill good optional">Open to a trial</span>{% endif %}
+        </div>
+
+        {% if c.tags %}
+        <div class="tagrow">{% for t in c.tags %}<span class="tag">{{ t.label }}</span>{% endfor %}</div>
         {% endif %}
-        {% if c.open_to_trial %}<span>Open to a paid trial</span>{% endif %}
-      </div>
-      {% if c.tags %}
-      <div class="tags">{% for t in c.tags %}<span class="tag">{{ t.label }}</span>{% endfor %}</div>
-      {% endif %}
-    </article>
-    {% else %}
-    <div class="empty">
-      {% if is_filtered %}
-        No profiles match those filters. <a href="/browse">Clear them</a> to see everyone.
+      </a>
       {% else %}
-        No profiles are live yet. The board is being seeded by hand &mdash;
-        <a href="/submit">add yours</a>.
-      {% endif %}
+      <div class="empty">
+        {% if is_filtered %}
+          <h3>No profiles match those filters.</h3>
+          <p><a href="/browse">Clear them</a> to see everyone on the board.</p>
+        {% else %}
+          <h3>No profiles are live yet.</h3>
+          <p>The board is being seeded by hand. <a href="/submit">Add yours</a>.</p>
+        {% endif %}
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
 
     {% if total > f.page_size %}
     <div class="pager">
-      {% if f.page > 1 %}<a class="btn small plain" href="{{ page_url(f.page - 1) }}">&larr; Previous</a>{% endif %}
-      <span class="count">Page {{ f.page }} of {{ page_count }}</span>
-      {% if f.page < page_count %}<a class="btn small plain" href="{{ page_url(f.page + 1) }}">Next &rarr;</a>{% endif %}
+      {% if f.page > 1 %}<a class="btn sm ghost" href="{{ page_url(f.page - 1) }}">&larr; Previous</a>{% endif %}
+      <span class="muted">Page {{ f.page }} of {{ page_count }}</span>
+      {% if f.page < page_count %}<a class="btn sm ghost" href="{{ page_url(f.page + 1) }}">Next &rarr;</a>{% endif %}
     </div>
     {% endif %}
   </div>
 </div>
+
 {% endblock %}

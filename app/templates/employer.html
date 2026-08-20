@@ -1,20 +1,26 @@
 {% extends "base.html" %}
 {% block title %}Employer sign in &mdash; CareerGapJobBoard{% endblock %}
 {% block body %}
-<div class="wrap narrow" style="padding:48px 20px 72px">
-  <h1 style="letter-spacing:-0.025em">Employer sign in</h1>
-  <div class="notice">
-    <strong>Not built yet.</strong> Employer accounts and the contact-reveal gate
-    are the next thing on the list. Until then no contact details are reachable
-    over the web at all &mdash; there is no route that can return them.
+<div class="wrap narrow" style="padding:56px 24px 24px">
+  <h1 style="font-size:clamp(1.8rem,4vw,2.4rem);letter-spacing:-0.038em;margin-bottom:14px">
+    Employer sign in
+  </h1>
+
+  <div class="banner warn">
+    <strong>Not built yet.</strong> Employer accounts and the contact-reveal
+    gate are next. Until then no contact details are reachable over the web at
+    all &mdash; there is no route on this site that can return them.
   </div>
-  <p>When it lands, it will work like this:</p>
-  <ul>
-    <li>Sign up with a work email address. Free email domains are rejected.</li>
-    <li>Verify by magic link.</li>
-    <li>Reveal up to 20 candidates a day. Re-opening one you already unlocked is free.</li>
-    <li>Every reveal is logged against your account.</li>
-  </ul>
-  <p><a class="btn ghost" href="/browse">Browse candidates</a></p>
+
+  <p class="lead" style="font-size:1rem">When it lands, it will work like this:</p>
+
+  <ol class="steplist">
+    <li><span class="n">1</span> Sign up with a work email address. Free email domains are rejected.</li>
+    <li><span class="n">2</span> Verify by magic link.</li>
+    <li><span class="n">3</span> Reveal up to 20 candidates a day. Re-opening one you already unlocked is free.</li>
+    <li><span class="n">4</span> Every reveal is logged against your account.</li>
+  </ol>
+
+  <a class="btn ghost" href="/browse">Browse candidates</a>
 </div>
 {% endblock %}
