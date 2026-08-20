@@ -58,6 +58,11 @@
     <span>Every profile is reviewed by a person before it goes live.</span>
     <span class="dot" aria-hidden="true">&bull;</span>
     <span>Contact details are released only to verified employers.</span>
+    {% set support = support_url() %}
+    {% if support %}
+    <span class="dot" aria-hidden="true">&bull;</span>
+    <a href="{{ support }}" rel="noopener">Buy me a coffee</a>
+    {% endif %}
   </div>
 </footer>
 

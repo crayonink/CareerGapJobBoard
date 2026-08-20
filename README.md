@@ -111,10 +111,22 @@ Both alternatives are tagged, so switching is one checkout:
 | `CGJB_DB` | optional | Defaults to `/data/careergap.db` on Railway, `careergap.db` locally |
 | `ADMIN_USER` | `/admin` | Without both, `/admin` returns 503 — no default password |
 | `ADMIN_PASSWORD` | `/admin` | |
+| `SUPPORT_URL` | optional | Your Buy Me a Coffee page. Unset hides every support link rather than shipping a dead button |
 
 `/admin` can publish profiles and delete people's data. An unreachable page
 beats a guessable one, so it refuses to run unconfigured rather than falling
 back to a default.
+
+### Funding
+
+The board runs on donations, so `SUPPORT_URL` puts a "Buy me a coffee" link in
+the footer of every page and a support block on the landing and employer pages.
+
+There is deliberately **no support block in the candidate flow** — `/submit`
+and the thank-you page get the quiet footer link and nothing more. Asking
+someone for money immediately after they've told you they're out of work is the
+wrong ask at the wrong moment, and the employer side is where the budget is.
+[tests/test_web.py](tests/test_web.py) pins that placement.
 
 ## Deploying to Railway
 

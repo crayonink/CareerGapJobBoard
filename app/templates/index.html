@@ -94,6 +94,21 @@
       <p>One order, most recently updated. Nothing to game, so no logging in every morning just to stay visible.</p>
     </article>
   </div>
+
+  {% set support = support_url() %}
+  {% if support %}
+  <aside class="support reveal">
+    <div>
+      <h3>Buy me a coffee</h3>
+      <p>
+        No fees, no premium tier, no selling candidate data &mdash; those are
+        the three things that would change what this board is for. It stays
+        free on both sides and runs on whatever people send.
+      </p>
+    </div>
+    <a class="btn" href="{{ support }}" rel="noopener">Buy me a coffee</a>
+  </aside>
+  {% endif %}
 </section>
 
 {% endblock %}

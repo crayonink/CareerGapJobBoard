@@ -706,6 +706,22 @@
   dialog p { color: var(--text-dim); font-size: 14.6px; }
   dialog .acts { margin-top: 20px; justify-content: flex-end; }
 
+  /* Donation block. Deliberately absent from /submit and the thank-you page:
+     asking someone for money immediately after they told you they are out of
+     work is the wrong ask at the wrong moment. */
+  .support {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px; flex-wrap: wrap;
+    margin: 8px 0 24px;
+    padding: 26px 28px;
+    border: var(--bw) solid var(--text);
+    background: var(--accent-soft);
+    box-shadow: var(--shadow);
+  }
+  .support h3 { font-size: 17px; margin-bottom: 6px; letter-spacing: -0.02em; }
+  .support p { margin: 0; font-size: 14.7px; max-width: 62ch; }
+  .support .btn { --btn-bg: var(--text); --btn-fg: var(--bg-elevated); --btn-line: var(--text); }
+
   /* --- misc ------------------------------------------------------------ */
 
   .centered { text-align: center; padding: clamp(64px, 12vw, 120px) 0; }

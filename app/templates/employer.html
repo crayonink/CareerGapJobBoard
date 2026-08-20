@@ -22,5 +22,19 @@
   </ol>
 
   <a class="btn ghost" href="/browse">Browse candidates</a>
+
+  {% set support = support_url() %}
+  {% if support %}
+  <aside class="support" style="margin-top:40px">
+    <div>
+      <h3>Hiring here is free, and stays free</h3>
+      <p>
+        No job-slot fees and no per-contact charge. If the board finds you
+        someone, buying me a coffee is the whole ask.
+      </p>
+    </div>
+    <a class="btn" href="{{ support }}" rel="noopener">Buy me a coffee</a>
+  </aside>
+  {% endif %}
 </div>
 {% endblock %}

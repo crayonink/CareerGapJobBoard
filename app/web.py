@@ -50,6 +50,19 @@ from .search import count_matches, fetch_page
 
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 
+
+def support_url() -> str:
+    """Where the "buy me a coffee" links point, from SUPPORT_URL.
+
+    A callable rather than a value read at import, so it can be changed without
+    a redeploy and so tests can set it per-case. Empty hides every support link
+    on the site - a dead button is worse than no button.
+    """
+    return os.environ.get("SUPPORT_URL", "").strip()
+
+
+TEMPLATES.env.globals["support_url"] = support_url
+
 router = APIRouter()
 basic = HTTPBasic(auto_error=False)
 

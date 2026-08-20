@@ -335,3 +335,50 @@ def test_landing_carries_both_the_tagline_and_the_free_promise(client):
     body = client.get("/").text
     assert "Keep hiring interesting." in body
     assert "Free for both sides" in body
+
+
+def test_no_support_link_when_unconfigured(client, monkeypatch):
+    """A dead "support us" button is worse than no button."""
+    monkeypatch.delenv("SUPPORT_URL", raising=False)
+    for path in ("/", "/employer", "/browse"):
+        assert "Buy me a coffee" not in client.get(path).text
+
+
+def test_support_link_appears_when_configured(client, monkeypatch):
+    monkeypatch.setenv("SUPPORT_URL", "https://buymeacoffee.com/example")
+    body = client.get("/").text
+    assert "https://buymeacoffee.com/example" in body
+    assert "runs on whatever people send" in body
+    # Footer link is on every page, not just the landing page.
+    assert "Buy me a coffee" in client.get("/browse").text
+
+
+def test_employer_page_makes_the_ask(client, monkeypatch):
+    """Employers are the side with a budget."""
+    monkeypatch.setenv("SUPPORT_URL", "https://buymeacoffee.com/example")
+    assert "Buy me a coffee" in client.get("/employer").text
+
+
+def test_candidates_are_not_asked_for_money(client, monkeypatch):
+    """No support block in the candidate flow. Asking someone for money right
+    after they told you they are out of work is the wrong ask at the wrong
+    moment.
+
+    The quiet footer link is still there on every page - that is a link, not an
+    ask, and hiding the site's funding model from one group would be worse.
+    """
+    monkeypatch.setenv("SUPPORT_URL", "https://buymeacoffee.com/example")
+
+    form = client.get("/submit").text
+    assert 'class="support' not in form
+    assert "Buy me a coffee" in form  # footer only
+
+    done = client.post("/submit", data=valid_form()).text
+    assert 'class="support' not in done
+
+
+def test_the_ask_is_made_where_the_budget_is(client, monkeypatch):
+    """Landing and employer pages carry the block; the candidate flow does not."""
+    monkeypatch.setenv("SUPPORT_URL", "https://buymeacoffee.com/example")
+    for path in ("/", "/employer"):
+        assert 'class="support' in client.get(path).text
