@@ -262,6 +262,9 @@
     z-index: -1;
   }
 
+  .badge-row { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-bottom: 26px; }
+  .badge-row .eyebrow { margin-bottom: 0; }
+
   /* Conic border that actually rotates, because --angle is a registered
      custom property rather than a string the engine cannot interpolate. */
   .eyebrow {
@@ -294,6 +297,15 @@
     background: var(--accent);
     animation: pulse 2.4s var(--ease-out) infinite;
   }
+
+  /* Second badge, deliberately static. Two rotating borders side by side
+     compete with each other and with the headline. */
+  .eyebrow.quiet {
+    color: var(--text-dim);
+    padding-inline: 15px;
+    font-weight: 500;
+  }
+  .eyebrow.quiet::before { background: var(--line); animation: none; }
 
   .hero h1 {
     font-size: clamp(2.4rem, 6.4vw, 4.25rem);

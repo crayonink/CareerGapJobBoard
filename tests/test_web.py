@@ -327,3 +327,11 @@ def select_candidates():
     from sqlalchemy import select
 
     return select(Candidate)
+
+
+def test_landing_carries_both_the_tagline_and_the_free_promise(client):
+    """Both have been lost once by being put in the same slot. They are two
+    different claims - what the board is for, and what it costs."""
+    body = client.get("/").text
+    assert "Keep hiring interesting." in body
+    assert "Free for both sides" in body
