@@ -1,19 +1,25 @@
 """ASGI entrypoint.
 
-Read-only JSON for now: this exists so the deploy pipeline is real and
-verifiable end to end while the surface is still small enough to check by eye.
-`/submit`, `/admin`, employer auth and the reveal gate are build steps 2 and 4;
-until they land there is deliberately no way to write to this database over
-HTTP, and no route that can return a candidate's contact details.
+The site is server-rendered HTML (see web.py). The JSON API lives under /api
+and is a thin second face on the same query layer - useful for checking things
+without a browser, and for whatever comes after.
+
+Employer accounts and the contact-reveal gate are build step 4. Until they land
+there is no route on this app that can return a candidate's email, phone or
+resume, and a test enforces that by walking the route table.
 """
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
+from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .db import DB_PATH, get_session, storage_is_ephemeral
 from .enums import ProfileStatus
@@ -21,50 +27,66 @@ from .models import Candidate
 from .present import to_card, to_public
 from .schemas import BrowseFilters, BrowseResponse, CandidatePublic
 from .search import count_matches, fetch_page
+from .web import TEMPLATES, router as web_router
 
 app = FastAPI(
     title="CareerGapJobBoard",
     description="Reverse job board for candidates with employment gaps.",
-    version="0.1.0",
+    version="0.2.0",
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json",
+)
+
+app.mount(
+    "/static",
+    StaticFiles(directory=str(Path(__file__).parent / "static")),
+    name="static",
 )
 
 
 @app.middleware("http")
 async def robots_policy(request: Request, call_next) -> Response:
-    """Guardrail 4. Public profiles are the point of the site and should be
-    indexed; everything else - health, docs, and later /admin and the employer
-    routes - should not be. Default to noindex and opt routes in."""
+    """Guardrail 4. Public profiles are the point and should be indexed;
+    /admin, employer routes, the API and health should not be. Default to
+    noindex and opt routes in, so a new route is private until someone decides
+    otherwise."""
     response = await call_next(request)
     path = request.url.path
-    indexable = path == "/" or path.startswith("/p/")
+    indexable = path == "/" or path.startswith("/p/") or path == "/browse"
     if not indexable:
         response.headers["X-Robots-Tag"] = "noindex, nofollow"
     return response
 
 
-@app.get("/")
-def index() -> dict:
-    """Placeholder root.
+@app.exception_handler(StarletteHTTPException)
+async def html_errors(request: Request, exc: StarletteHTTPException):
+    """Browsers get a page, API clients get JSON.
 
-    Not a redirect to /docs: this URL becomes the landing page in step 5, and
-    pointing the site root at an API browser would make /docs the de facto
-    homepage and leave a redirect to unpick later. A small index says what
-    exists without claiming to be the front door.
+    Without this a mistyped profile URL renders as a raw JSON blob, which reads
+    as a broken site rather than a missing page.
     """
-    return {
-        "service": "CareerGapJobBoard",
-        "description": (
-            "Reverse job board. Candidates with employment gaps publish "
-            "profiles; employers browse and reach out."
-        ),
-        "status": "under construction - landing page is build step 5",
-        "routes": {
-            "browse": "/browse",
-            "profile": "/p/{slug}",
-            "docs": "/docs",
-            "health": "/health",
-        },
-    }
+    wants_html = "text/html" in request.headers.get("accept", "")
+    if wants_html and not request.url.path.startswith("/api"):
+        return TEMPLATES.TemplateResponse(
+            request,
+            "error.html",
+            {"code": exc.status_code, "detail": exc.detail, "nav": None},
+            status_code=exc.status_code,
+            headers=getattr(exc, "headers", None),
+        )
+    return JSONResponse(
+        {"detail": exc.detail},
+        status_code=exc.status_code,
+        headers=getattr(exc, "headers", None),
+    )
+
+
+app.include_router(web_router)
+
+
+# ---------------------------------------------------------------------------
+# JSON API
+# ---------------------------------------------------------------------------
 
 
 @app.get("/health", include_in_schema=False)
@@ -87,17 +109,14 @@ def health(session: Annotated[Session, Depends(get_session)]) -> dict:
     }
 
 
-@app.get("/browse", response_model=BrowseResponse)
-def browse(
+@app.get("/api/browse", response_model=BrowseResponse)
+def api_browse(
     filters: Annotated[BrowseFilters, Query()],
     session: Annotated[Session, Depends(get_session)],
 ) -> BrowseResponse:
-    """The directory.
-
-    `BrowseFilters` is `extra="forbid"`, so an unknown query parameter is a 422
-    rather than a silently ignored filter - which is what keeps
-    `?gap_reason=health` from ever looking like it worked.
-    """
+    """`BrowseFilters` is `extra="forbid"`, so an unknown query parameter is a
+    422 rather than a silently ignored filter - which is what keeps
+    `?gap_reason=health` from ever looking like it worked."""
     return BrowseResponse(
         total=count_matches(session, filters),
         page=filters.page,
@@ -106,19 +125,14 @@ def browse(
     )
 
 
-@app.get("/p/{slug}", response_model=CandidatePublic)
-def profile(
+@app.get("/api/p/{slug}", response_model=CandidatePublic)
+def api_profile(
     slug: str,
     session: Annotated[Session, Depends(get_session)],
 ) -> CandidatePublic:
-    """A public profile. Never includes contact details - reaching someone goes
-    through the reveal gate, which is build step 4."""
     candidate = session.scalar(
         select(Candidate).where(
-            Candidate.slug == slug,
-            # A 404 for anything not live, so an unlisted profile is
-            # indistinguishable from one that never existed.
-            Candidate.status == ProfileStatus.LIVE,
+            Candidate.slug == slug, Candidate.status == ProfileStatus.LIVE
         )
     )
     if candidate is None:

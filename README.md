@@ -3,21 +3,23 @@
 Reverse job board. Candidates with employment gaps publish profiles; employers
 browse and reach out. FastAPI + SQLite, deployed on Railway.
 
-**Build step 1 of 5 is done**: models, migrations, the `/browse` filter layer,
-and the serialisation tiers that keep contact details private. Plus a minimal
-read-only JSON API so the deploy pipeline is real and verifiable — `/submit`,
-`/admin`, employer auth and the reveal gate are steps 2 and 4.
+**Build steps 1, 2, 3 and 5 are done**: models and migrations, the `/submit`
+form and `/admin` review queue, `/browse` with filters, `/p/{slug}` profiles,
+and the landing page. **Step 4 — employer accounts and the contact-reveal
+gate — is not built.**
 
-Until those land there is deliberately **no HTTP route that writes to the
-database, and none that can return a candidate's contact details**. Two tests
-in [tests/test_api.py](tests/test_api.py) enforce exactly that, by walking the
-app's own route table.
+Until it is, there is deliberately **no HTTP route that can return a
+candidate's email, phone or CV**, and the only write path a stranger can reach
+is the submit form. Two tests in [tests/test_api.py](tests/test_api.py)
+enforce both by walking the app's own route table.
 
 ## Layout
 
 | File | What lives there |
 |---|---|
-| [app/main.py](app/main.py) | ASGI entrypoint: `/health`, `/browse`, `/p/{slug}` |
+| [app/main.py](app/main.py) | ASGI entrypoint, robots policy, JSON API under `/api` |
+| [app/web.py](app/web.py) | The website: landing, browse, profile, submit, admin |
+| [app/templates/](app/templates/) | Jinja templates |
 | [app/models.py](app/models.py) | `candidate`, `tag`, `proof_link`, `employer`, `contact_reveal` |
 | [app/enums.py](app/enums.py) | Controlled vocabularies + the gap-length buckets |
 | [app/schemas.py](app/schemas.py) | `BrowseFilters` and the three serialisation tiers |
@@ -45,16 +47,46 @@ uvicorn app.main:app --reload
 `alembic.ini`, so a migration can't run against a different database than the
 app.
 
-## Routes
+## Pages
 
-| Route | Returns | Indexed |
+Server-rendered Jinja — no build step, no client-side framework. The site is
+five pages and three of them are lists.
+
+| Route | What it is | Indexed |
 |---|---|---|
-| `GET /health` | Status, DB path, `storage_ephemeral`, whether any profile is live | no |
-| `GET /browse` | `BrowseResponse` — filtered, paged cards | no |
-| `GET /p/{slug}` | `CandidatePublic`, or 404 if not live | **yes** |
+| `GET /` | Landing page, two CTAs | **yes** |
+| `GET /browse` | Filtered directory, filter panel down the left | **yes** |
+| `GET /p/{slug}` | Public profile, contact block replaced by a sign-in gate | **yes** |
+| `GET /submit` · `POST /submit` | Candidate form → `pending_review` | no |
+| `GET /employer` | Placeholder — says plainly that step 4 isn't built | no |
+| `GET /admin` | Review queue (HTTP Basic) | no |
+| `POST /admin/{id}/{approve,changes,pause,delete}` | Review actions | no |
 
 Non-live profiles 404 rather than 403, so an unlisted profile is
-indistinguishable from one that never existed.
+indistinguishable from one that never existed. 404s render as a page for
+browsers and JSON for API clients.
+
+`POST /submit` is the only write path a stranger can reach, and everything it
+creates lands in `pending_review`. `approve` is the only code path that sets a
+profile live.
+
+### JSON API
+
+`GET /api/browse` and `GET /api/p/{slug}` are a second face on the same query
+layer, with docs at `/api/docs`. `GET /health` reports status, DB path,
+`storage_ephemeral`, and whether any profile is live.
+
+## Configuration
+
+| Variable | Needed for | Notes |
+|---|---|---|
+| `CGJB_DB` | optional | Defaults to `/data/careergap.db` on Railway, `careergap.db` locally |
+| `ADMIN_USER` | `/admin` | Without both, `/admin` returns 503 — no default password |
+| `ADMIN_PASSWORD` | `/admin` | |
+
+`/admin` can publish profiles and delete people's data. An unreachable page
+beats a guessable one, so it refuses to run unconfigured rather than falling
+back to a default.
 
 ## Deploying to Railway
 
@@ -136,13 +168,14 @@ this person job-hunting".
 
 | # | Guardrail | Where |
 |---|---|---|
-| 1 | Nothing goes live unreviewed | `ProfileStatus`; `search.base_query` filters to `LIVE` |
+| 1 | Nothing goes live unreviewed | `/admin` approve is the only path to `LIVE`; `search.base_query` filters to it |
 | 2 | Contact behind verified employer login | `policy.can_reveal`, `present.to_contact` |
 | 3 | 20 reveals/day per employer | `policy.DAILY_REVEAL_LIMIT`, rolling 24h window |
+| 4 | `noindex` on admin and employer routes | `main.robots_policy` — default noindex, opt routes in |
 | 5 | Resumes not public files | `resume_path` absent from every public schema |
-| 6 | One-click delete | `ON DELETE CASCADE` on every child table |
+| 6 | One-click delete | `/admin` delete: cascades plus an explicit file unlink |
 
-Guardrails 4 (`noindex`) and the file-deletion half of 6 land with the routes.
+Guardrail 2 is written and tested in `policy.can_reveal` but has no route yet — that is step 4.
 
 Re-opening a profile you already unlocked is free and doesn't burn quota —
 otherwise an employer re-reading their own shortlist pays twice.
@@ -179,9 +212,10 @@ otherwise an employer re-reading their own shortlist pays twice.
 
 ## Next
 
-2. `/submit` form and `/admin` review queue — you need to be able to seed
-3. `/browse` and `/p/{slug}` as HTML rather than JSON
-4. Employer auth and the reveal gate
-5. Landing page
+Step 4 is what's left: employer signup with a work-email check, magic-link
+verification, and the reveal gate on top of `policy.can_reveal` — which is
+already written and tested, it just has no route yet.
 
-Seed 20–30 profiles by hand before showing any employer.
+Then seed 20–30 profiles by hand through `/submit` and `/admin` before
+showing any employer. An empty board reads as a dead board, and you only get
+one first impression per recruiter.

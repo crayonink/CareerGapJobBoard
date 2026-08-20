@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{{ c.public_name }} &mdash; {{ c.headline }}{% endblock %}
+{% block meta %}<meta name="description" content="{{ c.headline }} &middot; {{ c.years_prior_experience }} years before a {{ c.gap.length_label }} career gap.">{% endblock %}
+{% block body %}
+<div class="wrap narrow profile">
+  <h1>{{ c.public_name }}</h1>
+  <p class="head-line">{{ c.headline }}</p>
+
+  <div class="factgrid">
+    <div class="fact"><span>Looking for</span><b>{{ c.role_sought }}</b></div>
+    <div class="fact"><span>Before the gap</span><b>{{ c.years_prior_experience }} years</b></div>
+    <div class="fact">
+      <span>Career gap</span>
+      <b>{{ c.gap.length_label }}{% if c.gap.ongoing %} &middot; ongoing{% endif %}</b>
+    </div>
+    <div class="fact">
+      <span>Based in</span>
+      <b>{{ c.city }}{% if c.open_to_remote %} &middot; remote ok{% endif %}</b>
+    </div>
+    <div class="fact">
+      <span>Notice period</span>
+      <b>{{ 'Immediate' if c.notice_period_days == 0 else c.notice_period_days ~ ' days' }}</b>
+    </div>
+    {% if c.expected_ctc %}
+    <div class="fact"><span>Looking for (annual)</span><b>&#8377;{{ '{:,}'.format(c.expected_ctc) }}</b></div>
+    {% endif %}
+  </div>
+
+  {% if c.summary %}
+  <section class="block">
+    <h2>About</h2>
+    <p>{{ c.summary }}</p>
+  </section>
+  {% endif %}
+
+  <section class="block">
+    <h2>The gap &mdash; {{ c.gap.start }}{% if c.gap.end %} to {{ c.gap.end }}{% else %} to now{% endif %}</h2>
+    {% if c.gap.reason %}
+    <p class="count">Reason given: {{ c.gap.reason.value.replace('_', ' ') }}</p>
+    {% endif %}
+    {% if c.gap_activity %}<p>{{ c.gap_activity }}</p>{% endif %}
+  </section>
+
+  {% if c.proof_links %}
+  <section class="block">
+    <h2>What they did during it</h2>
+    <ul class="proofs">
+      {% for p in c.proof_links %}
+      <li>
+        <div class="kind">{{ p.kind.value }}</div>
+        <a href="{{ p.url }}" rel="nofollow noopener" target="_blank">{{ p.label }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if c.tags %}
+  <section class="block">
+    <h2>Skills</h2>
+    <div class="tags">{% for t in c.tags %}<span class="tag">{{ t.label }}</span>{% endfor %}</div>
+  </section>
+  {% endif %}
+
+  {% if c.open_to_trial or c.flexibility_note %}
+  <section class="block">
+    <h2>Working arrangements</h2>
+    {% if c.open_to_trial %}<p>Open to a paid short-term trial.</p>{% endif %}
+    {% if c.flexibility_note %}<p>{{ c.flexibility_note }}</p>{% endif %}
+  </section>
+  {% endif %}
+
+  <section class="block">
+    <h2>Contact</h2>
+    <div class="contact-gate">
+      <p>
+        Contact details{% if c.has_resume %} and CV{% endif %} are released to
+        verified employers only, and every release is logged.
+      </p>
+      <a class="btn" href="/employer">Sign in as an employer to view contact</a>
+    </div>
+  </section>
+
+  <p><a href="/browse">&larr; Back to all candidates</a></p>
+</div>
+{% endblock %}

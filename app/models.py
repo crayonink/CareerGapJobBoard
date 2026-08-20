@@ -88,6 +88,11 @@ class Candidate(Base):
     years_prior_experience: Mapped[int] = mapped_column(Integer, default=0, index=True)
     summary: Mapped[str | None] = mapped_column(Text)
 
+    # Skills exactly as the candidate typed them. Kept because review is where
+    # they become canonical tags, and the reviewer needs to see the original to
+    # do that - and to notice when a new spelling deserves a tag_alias row.
+    skills_raw: Mapped[str | None] = mapped_column(String(300))
+
     # --- the gap -------------------------------------------------------------
     gap_start: Mapped[dt.date] = mapped_column(Date)
     gap_end: Mapped[dt.date | None] = mapped_column(Date)  # NULL => still on break

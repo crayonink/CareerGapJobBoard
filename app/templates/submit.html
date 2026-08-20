@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Add your profile &mdash; CareerGapJobBoard{% endblock %}
+{% block body %}
+<div class="wrap narrow">
+  <form class="stack" method="post" action="/submit">
+    <h1 style="letter-spacing:-0.025em;margin-bottom:6px">Add your profile</h1>
+    <p class="count" style="margin-top:0">
+      Nothing goes live until a person has reviewed it. Your email and phone are
+      never shown publicly &mdash; profiles display a first name and initial only.
+    </p>
+
+    {% if errors %}
+    <div class="errors">
+      <strong>Fix these first:</strong>
+      <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+
+    <fieldset>
+      <legend>You</legend>
+      <div class="field">
+        <label for="full_name">Full name</label>
+        <span class="hint">Shown publicly as first name plus initial, e.g. &ldquo;Rupa K.&rdquo;</span>
+        <input type="text" id="full_name" name="full_name" required maxlength="120" value="{{ v.full_name }}">
+      </div>
+      <div class="cols2">
+        <div class="field">
+          <label for="email">Email</label>
+          <span class="hint">Never public.</span>
+          <input type="email" id="email" name="email" required maxlength="160" value="{{ v.email }}">
+        </div>
+        <div class="field">
+          <label for="phone">Phone (optional)</label>
+          <span class="hint">Never public.</span>
+          <input type="text" id="phone" name="phone" maxlength="32" value="{{ v.phone }}">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Your profile</legend>
+      <div class="field">
+        <label for="headline">Headline</label>
+        <span class="hint">One line on what you do. Max 120 characters.</span>
+        <input type="text" id="headline" name="headline" required maxlength="120" value="{{ v.headline }}">
+      </div>
+      <div class="cols2">
+        <div class="field">
+          <label for="city">City</label>
+          <input type="text" id="city" name="city" required maxlength="80" value="{{ v.city }}">
+        </div>
+        <div class="field">
+          <label for="role_sought">Role you want next</label>
+          <input type="text" id="role_sought" name="role_sought" required maxlength="120" value="{{ v.role_sought }}">
+        </div>
+      </div>
+      <div class="cols2">
+        <div class="field">
+          <label for="years_prior_experience">Years of experience before the gap</label>
+          <input type="number" id="years_prior_experience" name="years_prior_experience"
+                 min="0" max="50" required value="{{ v.years_prior_experience }}">
+        </div>
+        <div class="field">
+          <label for="skills">Skills</label>
+          <span class="hint">Comma separated. Normalised during review.</span>
+          <input type="text" id="skills" name="skills" value="{{ v.skills }}">
+        </div>
+      </div>
+      <div class="field">
+        <label for="summary">About you (optional)</label>
+        <textarea id="summary" name="summary" maxlength="800">{{ v.summary }}</textarea>
+      </div>
+      <div class="field inline">
+        <input type="checkbox" id="open_to_remote" name="open_to_remote" value="true" {% if v.open_to_remote %}checked{% endif %}>
+        <label for="open_to_remote">Open to remote work</label>
+      </div>
+      <div class="field inline">
+        <input type="checkbox" id="open_to_relocate" name="open_to_relocate" value="true" {% if v.open_to_relocate %}checked{% endif %}>
+        <label for="open_to_relocate">Willing to relocate</label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>The gap</legend>
+      <div class="cols2">
+        <div class="field">
+          <label for="gap_start">Gap started</label>
+          <input type="month" id="gap_start" name="gap_start" required value="{{ v.gap_start }}">
+        </div>
+        <div class="field">
+          <label for="gap_end">Gap ended</label>
+          <span class="hint">Leave blank if you are still on the break.</span>
+          <input type="month" id="gap_end" name="gap_end" value="{{ v.gap_end }}">
+        </div>
+      </div>
+      <div class="field">
+        <label for="gap_reason">Reason (optional)</label>
+        <span class="hint">
+          Displayed on your profile if you give one. Never used as a filter, and
+          nobody can search or sort by it.
+        </span>
+        <select id="gap_reason" name="gap_reason">
+          <option value="">Rather not say</option>
+          {% for value, label in gap_reasons %}
+          <option value="{{ value }}" {% if v.gap_reason == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="gap_activity">What did you do during it?</label>
+        <span class="hint">The field employers actually read. Be specific.</span>
+        <textarea id="gap_activity" name="gap_activity" required>{{ v.gap_activity }}</textarea>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Proof &mdash; at least one link</legend>
+      <p class="hint" style="margin-top:0">
+        A repo, a piece of writing, a freelance client, a course certificate, a
+        business you ran. This is the part that changes how the gap reads.
+      </p>
+      {% for i in range(3) %}
+      <div class="cols2">
+        <div class="field">
+          <label for="proof_label_{{ i }}">Label{% if i == 0 %} (required){% endif %}</label>
+          <input type="text" id="proof_label_{{ i }}" name="proof_label" maxlength="140"
+                 placeholder="GitHub &mdash; 1,129 commits during the break">
+        </div>
+        <div class="field">
+          <label for="proof_url_{{ i }}">Link</label>
+          <div style="display:flex;gap:8px">
+            <input type="url" id="proof_url_{{ i }}" name="proof_url" maxlength="500" placeholder="https://">
+            <select name="proof_kind" style="max-width:130px">
+              {% for value, label in proof_kinds %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </fieldset>
+
+    <fieldset>
+      <legend>Availability</legend>
+      <div class="cols2">
+        <div class="field">
+          <label for="notice_period_days">Notice period (days)</label>
+          <span class="hint">0 if you can start immediately.</span>
+          <input type="number" id="notice_period_days" name="notice_period_days"
+                 min="0" max="365" required value="{{ v.notice_period_days }}">
+        </div>
+        <div class="field">
+          <label for="expected_ctc">Expected annual pay, &#8377; (optional)</label>
+          <span class="hint">Shown on your profile. Never a filter or a sort.</span>
+          <input type="number" id="expected_ctc" name="expected_ctc" min="0" value="{{ v.expected_ctc }}">
+        </div>
+      </div>
+      <div class="field inline">
+        <input type="checkbox" id="open_to_trial" name="open_to_trial" value="true" {% if v.open_to_trial %}checked{% endif %}>
+        <label for="open_to_trial">Open to a paid short-term trial</label>
+      </div>
+      <div class="field">
+        <label for="flexibility_note">Anything about how you want to work (optional)</label>
+        <span class="hint">Your own words. Max 200 characters.</span>
+        <input type="text" id="flexibility_note" name="flexibility_note" maxlength="200" value="{{ v.flexibility_note }}">
+      </div>
+    </fieldset>
+
+    <button class="btn" type="submit">Submit for review</button>
+  </form>
+</div>
+{% endblock %}

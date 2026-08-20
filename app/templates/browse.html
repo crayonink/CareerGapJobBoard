@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Browse candidates &mdash; CareerGapJobBoard{% endblock %}
+{% block body %}
+<div class="wrap browse">
+
+  <form class="filters" method="get" action="/browse">
+    <h2>Filters</h2>
+
+    <div class="fgroup">
+      <strong>Skills</strong>
+      {% for t in all_tags %}
+      <label>
+        <input type="checkbox" name="tags" value="{{ t.slug }}"
+               {% if t.slug in f.tags %}checked{% endif %}> {{ t.label }}
+      </label>
+      {% else %}
+      <span class="count">No skills recorded yet.</span>
+      {% endfor %}
+    </div>
+
+    <div class="fgroup">
+      <strong>Gap length</strong>
+      {% for value, label in gap_buckets %}
+      <label>
+        <input type="checkbox" name="gap_bucket" value="{{ value }}"
+               {% if value in selected_buckets %}checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+
+    <div class="fgroup">
+      <strong>Location</strong>
+      <input type="text" name="city" placeholder="City" value="{{ f.city or '' }}">
+      <label style="margin-top:8px">
+        <input type="checkbox" name="open_to_remote" value="true"
+               {% if f.open_to_remote %}checked{% endif %}> Open to remote
+      </label>
+    </div>
+
+    <div class="fgroup">
+      <strong>Experience before the gap</strong>
+      <div class="frow">
+        <input type="number" name="min_years" min="0" max="50" placeholder="Min"
+               value="{{ f.min_years if f.min_years is not none else '' }}">
+        <input type="number" name="max_years" min="0" max="50" placeholder="Max"
+               value="{{ f.max_years if f.max_years is not none else '' }}">
+      </div>
+    </div>
+
+    <div class="fgroup">
+      <strong>Availability</strong>
+      <input type="number" name="max_notice_days" min="0" max="365" placeholder="Max notice (days)"
+             value="{{ f.max_notice_days if f.max_notice_days is not none else '' }}">
+      <label style="margin-top:8px">
+        <input type="checkbox" name="open_to_trial" value="true"
+               {% if f.open_to_trial %}checked{% endif %}> Open to a paid trial
+      </label>
+    </div>
+
+    <div class="fgroup">
+      <button class="btn small" type="submit">Apply filters</button>
+      <a class="btn small plain" href="/browse" style="margin-left:6px">Clear</a>
+    </div>
+  </form>
+
+  <div class="results">
+    <div class="results-head">
+      <h1>Candidates</h1>
+      <span class="count">{{ total }} profile{{ '' if total == 1 else 's' }}{% if is_filtered %} match your filters{% endif %}</span>
+    </div>
+
+    {% for c in results %}
+    <article class="card">
+      <h3><a href="/p/{{ c.slug }}">{{ c.public_name }}</a></h3>
+      <p class="head-line">{{ c.headline }}</p>
+      <div class="meta">
+        <span><b>{{ c.years_prior_experience }} yr</b> before the gap</span>
+        <span>Gap: <b>{{ c.gap.length_label }}</b>{% if c.gap.ongoing %} &middot; ongoing{% endif %}</span>
+        <span>{{ c.city }}{% if c.open_to_remote %} &middot; remote ok{% endif %}</span>
+        <span>Notice: <b>{{ 'immediate' if c.notice_period_days == 0 else c.notice_period_days ~ ' days' }}</b></span>
+        {% if c.proof_link_count %}
+        <span class="proofmark">{{ c.proof_link_count }} proof link{{ '' if c.proof_link_count == 1 else 's' }}</span>
+        {% endif %}
+        {% if c.open_to_trial %}<span>Open to a paid trial</span>{% endif %}
+      </div>
+      {% if c.tags %}
+      <div class="tags">{% for t in c.tags %}<span class="tag">{{ t.label }}</span>{% endfor %}</div>
+      {% endif %}
+    </article>
+    {% else %}
+    <div class="empty">
+      {% if is_filtered %}
+        No profiles match those filters. <a href="/browse">Clear them</a> to see everyone.
+      {% else %}
+        No profiles are live yet. The board is being seeded by hand &mdash;
+        <a href="/submit">add yours</a>.
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    {% if total > f.page_size %}
+    <div class="pager">
+      {% if f.page > 1 %}<a class="btn small plain" href="{{ page_url(f.page - 1) }}">&larr; Previous</a>{% endif %}
+      <span class="count">Page {{ f.page }} of {{ page_count }}</span>
+      {% if f.page < page_count %}<a class="btn small plain" href="{{ page_url(f.page + 1) }}">Next &rarr;</a>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

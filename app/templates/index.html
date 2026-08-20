@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="wrap hero">
+  <h1>A career gap is a fact, not a disqualification.</h1>
+  <p class="lead">
+    This is a job board in reverse. People with employment gaps publish what they
+    did during the break &mdash; the repos, the courses, the freelance work, the
+    business they ran &mdash; and employers come looking. No applications into a
+    void, no algorithm quietly filing you under &ldquo;unexplained gap&rdquo;.
+  </p>
+  <div class="cta-row">
+    <a class="btn" href="/submit">Add your profile</a>
+    <a class="btn ghost" href="/browse">Browse {{ live_count }} candidate{{ '' if live_count == 1 else 's' }}</a>
+  </div>
+</div>
+<div class="wrap">
+  <div class="pillars">
+    <div class="pillar">
+      <h3>The gap is a field, not a hole</h3>
+      <p>Length, and what happened during it, with links that prove it. Every profile needs at least one.</p>
+    </div>
+    <div class="pillar">
+      <h3>Reviewed before it goes live</h3>
+      <p>Every profile is read by a human first. No half-finished entries, so the board stays worth browsing.</p>
+    </div>
+    <div class="pillar">
+      <h3>Your contact details stay yours</h3>
+      <p>Profiles are public; your email, phone and CV are released only to a verified employer, and every release is logged.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Review queue &mdash; CareerGapJobBoard{% endblock %}
+{% block body %}
+<div class="wrap" style="padding:28px 20px 64px">
+  <div class="results-head">
+    <h1>Review queue</h1>
+    <span class="count">{{ pending|length }} waiting &middot; {{ live_count }} live</span>
+  </div>
+
+  <p class="count">
+    Nothing reaches the board without passing through here. Approving sets the
+    profile live; requesting changes sends it back to the candidate with a note.
+  </p>
+
+  {% for c in pending %}
+  <article class="queue-item">
+    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+      <h3 style="margin:0;font-size:17px">{{ c.full_name }}</h3>
+      <span class="status-pill">{{ c.status.value }}</span>
+      <span class="count">{{ c.email }}{% if c.phone %} &middot; {{ c.phone }}{% endif %}</span>
+    </div>
+    <p class="head-line" style="margin:6px 0 10px">{{ c.headline }}</p>
+
+    <div class="meta">
+      <span>{{ c.city }}</span>
+      <span>Wants: <b>{{ c.role_sought }}</b></span>
+      <span><b>{{ c.years_prior_experience }} yr</b> prior</span>
+      <span>Gap: <b>{{ c.gap_months }} mo</b>{% if c.gap_end is none %} &middot; ongoing{% endif %}</span>
+      <span>Notice: <b>{{ c.notice_period_days }}d</b></span>
+    </div>
+
+    {% if c.gap_activity %}
+    <p style="margin:12px 0 0"><strong>During the gap:</strong> {{ c.gap_activity }}</p>
+    {% endif %}
+
+    <p style="margin:10px 0 0">
+      <strong>Proof links ({{ c.proof_links|length }}):</strong>
+      {% if c.proof_links %}
+      <ul class="proofs" style="margin-top:8px">
+        {% for p in c.proof_links %}
+        <li>
+          <div class="kind">{{ p.kind.value }}</div>
+          <a href="{{ p.url }}" rel="nofollow noopener" target="_blank">{{ p.label }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <span style="color:#b23c3c">none &mdash; should not have been accepted</span>
+      {% endif %}
+    </p>
+
+    <div class="acts">
+      <form method="post" action="/admin/{{ c.id }}/approve">
+        <input type="text" name="role_slug" placeholder="role slug" value="{{ c.role_sought_slug or '' }}" required>
+        <input type="text" name="tags" placeholder="tag slugs, comma separated" value="{{ tag_string(c) }}">
+        <button class="btn small" type="submit">Approve &amp; publish</button>
+      </form>
+      <form method="post" action="/admin/{{ c.id }}/changes">
+        <input type="text" name="note" placeholder="What needs fixing" required>
+        <button class="btn small plain" type="submit">Request changes</button>
+      </form>
+    </div>
+  </article>
+  {% else %}
+  <div class="empty">Queue is empty.</div>
+  {% endfor %}
+
+  {% if live %}
+  <h2 style="font-size:15px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-top:40px">Live profiles</h2>
+  {% for c in live %}
+  <article class="queue-item">
+    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+      <h3 style="margin:0;font-size:16px"><a href="/p/{{ c.slug }}">{{ c.full_name }}</a></h3>
+      <span class="status-pill">live</span>
+      <span class="count">{{ c.headline }}</span>
+    </div>
+    <div class="acts">
+      <form method="post" action="/admin/{{ c.id }}/pause">
+        <button class="btn small plain" type="submit">Pause</button>
+      </form>
+      <form method="post" action="/admin/{{ c.id }}/delete"
+            onsubmit="return confirm('Delete this profile and everything attached to it? This cannot be undone.')">
+        <button class="btn small danger" type="submit">Delete</button>
+      </form>
+    </div>
+  </article>
+  {% endfor %}
+  {% endif %}
+</div>
+{% endblock %}
