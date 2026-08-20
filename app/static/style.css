@@ -185,15 +185,6 @@
     vertical-align: -1px;
     background: var(--text);
   }
-  .topbar a {
-    color: var(--text);
-    text-decoration: underline;
-    text-decoration-thickness: var(--bw);
-    text-underline-offset: 3px;
-    margin-left: auto;
-  }
-  .topbar a:hover { background: var(--text); color: var(--accent-soft); text-decoration-color: transparent; }
-
   .site-header {
     position: sticky;
     top: 0;
@@ -869,7 +860,6 @@
     }
     .topbar .wrap::-webkit-scrollbar { display: none; }
     .topbar .wrap > * + *::before { margin-right: 18px; }
-    .topbar a { margin-left: 0; }
     .bento { grid-template-columns: 1fr; }
     .cols2 { grid-template-columns: 1fr; }
     .site-nav a { padding: 7px 10px; font-size: 14px; }

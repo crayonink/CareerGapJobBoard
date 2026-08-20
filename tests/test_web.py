@@ -401,6 +401,16 @@ def test_promises_are_at_the_top_not_the_footer(client):
     assert header < footer
 
 
+def test_no_ask_in_the_top_strip(client, monkeypatch):
+    """Claims only up there. The first thing anyone sees should not be an ask -
+    the coffee link lives in the footer and on the two pages that argue for it."""
+    monkeypatch.setenv("SUPPORT_URL", "https://buymeacoffee.com/example")
+    body = client.get("/browse").text
+    strip = body[body.index('class="topbar"'):body.index('class="site-header"')]
+    assert "Buy me a coffee" not in strip
+    assert "Buy me a coffee" in body           # still in the footer
+
+
 def test_top_strip_is_on_every_page(client, session, tags):
     c = make_candidate(session, tags)
     for path in ("/", "/browse", "/submit", "/employer", f"/p/{c.slug}"):
