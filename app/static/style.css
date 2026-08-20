@@ -38,51 +38,54 @@
        scrollbars and the canvas flipping dark on a machine set to dark. */
     color-scheme: light;
 
-    /* Monochrome. Chroma is 0 on every neutral, so these are true greys
-       rather than a tinted palette turned down - a trace of hue is what makes
-       a "grey" UI look faintly dirty or faintly cold.
+    /* Warm, on purpose. Two hue axes: sand carries the page and clay is the
+       accent. Publishing a career gap is an exposing thing to do, and a cold
+       white product UI makes it feel more like filing a claim than telling
+       someone what you have been doing. */
+    --sand: 68;
+    --clay: 40;
 
-       The one exception is the state colours below. An error banner that is
-       grey is not an error banner. */
-    --bg:          oklch(98.6% 0 0);
-    --bg-elevated: oklch(100% 0 0);
-    --surface:     oklch(100% 0 0);
-    --surface-2:   oklch(96.6% 0 0);
-    --surface-3:   oklch(93% 0 0);
+    --bg:          oklch(97.2% 0.020 var(--sand));
+    --bg-elevated: oklch(99.5% 0.008 var(--sand));
+    --surface:     oklch(99.2% 0.010 var(--sand));
+    --surface-2:   oklch(95% 0.026 var(--sand));
+    --surface-3:   oklch(91% 0.034 var(--sand));
 
-    --text:        oklch(20% 0 0);
-    --text-dim:    oklch(45% 0 0);
-    --text-faint:  oklch(57.5% 0 0);
+    /* Ink is warm brown rather than black - true black on cream reads as a
+       hole punched in the paper. */
+    --text:        oklch(26% 0.028 55);
+    --text-dim:    oklch(46% 0.028 55);
+    --text-faint:  oklch(58% 0.026 55);
 
-    --line:        oklch(91% 0 0);
-    --line-strong: oklch(82% 0 0);
+    --line:        oklch(89% 0.026 var(--sand));
+    --line-strong: oklch(80% 0.036 var(--sand));
 
-    /* The accent is near-black, not a colour. Buttons and links carry weight
-       through contrast and shape instead of hue. */
-    --accent:        oklch(24% 0 0);
-    --accent-hi:     oklch(14% 0 0);
-    --accent-bright: oklch(45% 0 0);
-    --accent-ink:    oklch(100% 0 0);
-    --accent-soft:   oklch(95% 0 0);
-    --accent-line:   oklch(85% 0 0);
+    --accent:        oklch(52% 0.145 var(--clay));  /* 5.41:1 on the ground */
+    --accent-hi:     oklch(44% 0.150 38);
+    --accent-bright: oklch(70% 0.140 45);           /* decorative only      */
+    --accent-ink:    oklch(99.5% 0.008 var(--sand));
+    --accent-soft:   oklch(94.5% 0.035 45);
+    --accent-line:   oklch(86% 0.070 45);
 
-    /* Restrained, but still recognisably green/amber/red - these carry
-       meaning, so they are the one place hue earns its keep. */
-    --good:     oklch(45% 0.11 150);
-    --warn:     oklch(52% 0.11 75);
-    --bad:      oklch(48% 0.16 25);
-    --bad-soft: oklch(95.5% 0.018 25);
+    --good:     oklch(48% 0.11 155);
+    --warn:     oklch(56% 0.12 75);
+    --bad:      oklch(50% 0.16 28);
+    --bad-soft: oklch(95% 0.025 28);
 
-    --shadow-color: oklch(20% 0 0 / 0.10);
-    --shadow-sm: 0 1px 2px var(--shadow-color);
-    --shadow:    0 1px 2px var(--shadow-color), 0 10px 28px -10px var(--shadow-color);
-    --shadow-lg: 0 2px 4px var(--shadow-color), 0 30px 60px -20px var(--shadow-color);
+    /* Warm and wide rather than dark and tight - a soft ambient lift instead
+       of a hard drop shadow. */
+    --shadow-color: oklch(45% 0.09 var(--clay) / 0.13);
+    --shadow-sm: 0 2px 6px -2px var(--shadow-color);
+    --shadow:    0 4px 14px -4px var(--shadow-color), 0 14px 40px -16px var(--shadow-color);
+    --shadow-lg: 0 6px 20px -6px var(--shadow-color), 0 36px 72px -24px var(--shadow-color);
 
-    --r-xs: 8px;
-    --r-sm: 11px;
-    --r:    15px;
-    --r-lg: 22px;
-    --r-xl: 30px;
+    /* Softer corners throughout. Rounded shapes read as approachable; the
+       sharp 8px product-UI corner is the thing that made this feel clinical. */
+    --r-xs: 10px;
+    --r-sm: 14px;
+    --r:    18px;
+    --r-lg: 26px;
+    --r-xl: 34px;
     --r-pill: 999px;
 
     --wrap: 1120px;
@@ -119,8 +122,8 @@
     background: var(--bg);
     color: var(--text);
     font-family: var(--font);
-    font-size: 16px;
-    line-height: 1.6;
+    font-size: 16.5px;
+    line-height: 1.68;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss03";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -226,7 +229,8 @@
     --btn-fg: var(--accent-ink);
     --btn-line: transparent;
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 11px 21px;
+    padding: 13px 24px;
+    min-height: 46px;
     border: 1px solid var(--btn-line);
     border-radius: var(--r-pill);
     background: var(--btn-bg);
@@ -245,8 +249,8 @@
   .btn.soft { --btn-bg: var(--accent-soft); --btn-fg: var(--accent); --btn-line: var(--accent-line); }
   .btn.danger { --btn-bg: transparent; --btn-fg: var(--bad); --btn-line: var(--bad); }
   .btn.danger:hover { --btn-bg: var(--bad-soft); }
-  .btn.sm { padding: 7px 15px; font-size: 13.5px; }
-  .btn.lg { padding: 14px 28px; font-size: 15.5px; }
+  .btn.sm { padding: 9px 17px; min-height: 38px; font-size: 13.8px; }
+  .btn.lg { padding: 16px 32px; min-height: 54px; font-size: 16px; }
 
   /* --- hero ------------------------------------------------------------ */
 
@@ -332,7 +336,7 @@
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--r-lg);
-    padding: 26px;
+    padding: 28px;
     overflow: hidden;
     transition: border-color var(--med), translate var(--med), box-shadow var(--med);
   }
@@ -351,13 +355,13 @@
   .tile:hover::after { opacity: 1; }
   .tile.wide { grid-column: span 3; }
   .tile-icon {
-    width: 34px; height: 34px;
+    width: 46px; height: 46px;
     display: grid; place-items: center;
-    border-radius: 10px;
+    border-radius: 50%;
     background: var(--accent-soft); color: var(--accent);
-    margin-bottom: 16px;
+    margin-bottom: 18px;
   }
-  .tile-icon svg { width: 17px; height: 17px; }
+  .tile-icon svg { width: 21px; height: 21px; }
   .tile h3 { font-size: 16.5px; margin-bottom: 7px; letter-spacing: -0.02em; }
   .tile p { color: var(--text-dim); font-size: 14.7px; margin: 0; }
 
@@ -386,7 +390,7 @@
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip {
     display: inline-flex; align-items: center;
-    padding: 6px 13px;
+    padding: 8px 15px;
     border: 1px solid var(--line);
     border-radius: var(--r-pill);
     font-size: 13.2px; color: var(--text-dim);
@@ -455,8 +459,8 @@
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--r-lg);
-    padding: 22px 24px;
-    margin-bottom: 14px;
+    padding: 26px 28px;
+    margin-bottom: 16px;
     text-decoration: none; color: inherit;
     transition: border-color var(--med), translate var(--med), box-shadow var(--med);
   }
@@ -464,8 +468,8 @@
   .card-top { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
 
   .avatar {
-    width: 42px; height: 42px; flex: none;
-    border-radius: 13px;
+    width: 48px; height: 48px; flex: none;
+    border-radius: 50%;
     display: grid; place-items: center;
     background: var(--accent-soft); color: var(--accent);
     font-weight: 640; font-size: 15px; letter-spacing: -0.02em;
@@ -519,7 +523,7 @@
   /* --- profile --------------------------------------------------------- */
 
   .profile-head { padding: 44px 0 8px; display: flex; gap: 20px; align-items: flex-start; }
-  .profile-head .avatar { width: 62px; height: 62px; border-radius: 19px; font-size: 21px; }
+  .profile-head .avatar { width: 72px; height: 72px; border-radius: 50%; font-size: 24px; }
   .profile-head h1 { font-size: clamp(1.7rem, 4vw, 2.4rem); letter-spacing: -0.038em; }
   .profile-head .headline { color: var(--text-dim); font-size: clamp(1rem, 2vw, 1.12rem); margin: 6px 0 0; }
 
@@ -629,8 +633,8 @@
   .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .inline-row { display: flex; gap: 10px; }
 
-  .checkline { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; cursor: pointer; }
-  .checkline input[type="checkbox"] { accent-color: var(--accent); width: 17px; height: 17px; }
+  .checkline { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; padding: 6px 0; cursor: pointer; }
+  .checkline input[type="checkbox"] { accent-color: var(--accent); width: 20px; height: 20px; }
   .checkline span { font-size: 14.5px; }
 
   .banner {
@@ -803,7 +807,7 @@
     .cols2 { grid-template-columns: 1fr; }
     .site-nav a { padding: 7px 10px; font-size: 14px; }
     .profile-head { gap: 14px; }
-    .profile-head .avatar { width: 50px; height: 50px; border-radius: 16px; font-size: 18px; }
+    .profile-head .avatar { width: 58px; height: 58px; font-size: 20px; }
     fieldset { padding: 20px 18px; }
     .site-footer { margin-top: 64px; }
   }

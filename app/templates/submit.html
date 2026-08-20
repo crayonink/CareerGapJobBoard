@@ -5,13 +5,14 @@
   <form class="form-page" method="post" action="/submit">
     <h1>Add your profile</h1>
     <p class="lead" style="margin-bottom:28px">
-      Nothing goes live until a person has reviewed it. Your email and phone are
-      never shown publicly &mdash; profiles display a first name and initial only.
+      Take your time with this one. Nothing goes live until a person has read
+      it, your email and phone are never shown publicly, and your page shows a
+      first name and initial only.
     </p>
 
     {% if errors %}
     <div class="banner error">
-      <strong>Fix these first:</strong>
+      <strong>Almost &mdash; a couple of things to fix:</strong>
       <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
     </div>
     {% endif %}
@@ -116,8 +117,9 @@
     <fieldset>
       <legend>Proof &mdash; at least one link</legend>
       <p class="hint" style="margin:-4px 0 16px">
-        A repo, a piece of writing, a freelance client, a course certificate, a
-        business you ran. This is the part that changes how the gap reads.
+        A repo, something you wrote, a client, a course certificate, a business
+        you ran. Most people undersell this part &mdash; it is the bit that
+        changes how the whole page reads.
       </p>
       {% for i in range(3) %}
       <div class="cols2">

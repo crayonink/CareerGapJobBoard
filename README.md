@@ -71,53 +71,30 @@ don't flip on a machine set to dark.
 
 ### Palette
 
-White and grey, and *actually* grey — chroma is `0` on every structural token,
-not merely small. A trace of hue is what makes a "grey" UI look faintly dirty
-or faintly cold, and it's invisible until you put it next to a true grey. The
-accent is near-black (`#1f1f1f`): buttons and links carry weight through
-contrast and shape rather than colour.
+Warm and human, on purpose. Publishing a career gap is an exposing thing to
+do, and a cold white product UI makes it feel more like filing a claim than
+telling someone what you've been doing.
+
+Two hue tokens: `--sand: 68` carries the page, `--clay: 40` is the accent. Ink
+is warm brown rather than black — true black on cream reads as a hole punched
+in the paper.
 
 | | |
 |---|---|
-| Ground | `#fafafa` |
-| Cards | `#ffffff` |
-| Borders | `#e1e1e1` |
-| Body text | `#161616` |
-| Secondary | `#555555` |
-| Accent | `#1f1f1f` |
+| Ground | `#fff4e8` |
+| Cards | `#fffbf5` |
+| Borders | `#e7d8c9` |
+| Body text | `#2f2017` |
+| Accent | `#ab441b` |
 
-The one exception is the state colours — success, warning, error keep their
-hue, because an error banner that's grey is not an error banner.
+Shapes are rounded (26px on cards), shadows are a soft warm lift rather than a
+hard drop, and anything tappable clears 46px.
 
 [tests/test_palette.py](tests/test_palette.py) parses the tokens straight out
 of `style.css`, converts OKLCH → sRGB and asserts every text pairing clears
-WCAG AA. It also pins the brief itself: structural tokens must be chroma `0`,
-state colours must keep theirs. Restyle the site and the tests tell you if
-you've broken either.
-
-| Route | What it is | Indexed |
-|---|---|---|
-| `GET /` | Landing page, two CTAs | **yes** |
-| `GET /browse` | Filtered directory, filter panel down the left | **yes** |
-| `GET /p/{slug}` | Public profile, contact block replaced by a sign-in gate | **yes** |
-| `GET /submit` · `POST /submit` | Candidate form → `pending_review` | no |
-| `GET /employer` | Placeholder — says plainly that step 4 isn't built | no |
-| `GET /admin` | Review queue (HTTP Basic) | no |
-| `POST /admin/{id}/{approve,changes,pause,delete}` | Review actions | no |
-
-Non-live profiles 404 rather than 403, so an unlisted profile is
-indistinguishable from one that never existed. 404s render as a page for
-browsers and JSON for API clients.
-
-`POST /submit` is the only write path a stranger can reach, and everything it
-creates lands in `pending_review`. `approve` is the only code path that sets a
-profile live.
-
-### JSON API
-
-`GET /api/browse` and `GET /api/p/{slug}` are a second face on the same query
-layer, with docs at `/api/docs`. `GET /health` reports status, DB path,
-`storage_ephemeral`, and whether any profile is live.
+WCAG AA — currently 4.93:1 at the tightest. It also pins the brief: the ground
+must stay warm, ink must not be pure black, and the state colours must keep
+their hue, because an error banner that's grey is not an error banner.
 
 ## Configuration
 

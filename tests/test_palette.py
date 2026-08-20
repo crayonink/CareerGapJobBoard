@@ -1,12 +1,12 @@
 """WCAG contrast, checked against the stylesheet itself.
 
-The palette is a column of OKLCH lightnesses. That makes it very easy to
+The palette is two hue tokens and a column of OKLCH lightnesses. That makes it very easy to
 restyle the whole site - and just as easy to push a pairing below AA without
 noticing, because OKLCH lightness is perceptual and contrast is not.
 
 These tests parse the real tokens out of style.css and do the arithmetic, so
 changing a token either keeps the site readable or fails the build. They also
-pin the brief itself: grey means chroma 0, and the state colours keep theirs.
+pin the brief itself: the ground stays warm, and the state colours keep their hue.
 """
 
 from __future__ import annotations
@@ -19,10 +19,8 @@ import pytest
 
 CSS = Path(__file__).resolve().parents[1] / "app" / "static" / "style.css"
 
-#: Hue axes, for tokens written as oklch(... var(--name)). The monochrome
-#: palette uses literal hues, so this is empty - it stays because a re-tint is
-#: exactly the change these tests exist to catch.
-HUES: dict[str, float] = {}
+#: Hue axes, resolved so tokens written as oklch(... var(--sand)) can be read.
+HUES = {"--sand": 68.0, "--clay": 40.0}
 
 TOKEN_RE = re.compile(
     r"(--[a-z0-9-]+):\s*oklch\(([\d.]+)%\s+([\d.]+)\s+(var\(--[a-z]+\)|[\d.]+)\)"
@@ -100,30 +98,45 @@ def test_contrast(tokens, label, fg, bg, minimum):
     assert ratio >= minimum, f"{label}: {ratio:.2f}:1, needs {minimum}:1"
 
 
-#: Everything structural. The state colours are deliberately excluded - an
-#: error banner that is grey is not an error banner.
-NEUTRALS = [
+#: The tokens that set the mood. A cold or neutral value in any of these means
+#: the warm palette has been half-reverted.
+WARM_GROUND = [
     "--bg", "--bg-elevated", "--surface", "--surface-2", "--surface-3",
-    "--text", "--text-dim", "--text-faint", "--line", "--line-strong",
-    "--accent", "--accent-hi", "--accent-bright", "--accent-ink",
-    "--accent-soft", "--accent-line",
+    "--line", "--line-strong",
 ]
 
 
-@pytest.mark.parametrize("token", NEUTRALS)
-def test_palette_is_actually_neutral(token):
-    """The brief is white and grey. Chroma has to be 0, not merely small - a
-    trace of hue is what makes a "grey" UI look faintly dirty or faintly cold,
-    and it is invisible until you put it next to a true grey."""
+@pytest.mark.parametrize("token", WARM_GROUND)
+def test_the_ground_is_warm(token):
+    """The brief is warm and human. Publishing a career gap is an exposing
+    thing to do, and a cold white product UI makes it feel like filing a claim.
+    Chroma at or near zero here means someone reverted to grey."""
     css = CSS.read_text(encoding="utf-8")
     match = re.search(rf"{token}:\s*oklch\([\d.]+%\s+([\d.]+)", css)
     assert match, f"{token} is not defined as an oklch() literal any more"
     chroma = float(match.group(1))
-    assert chroma == 0, f"{token} has chroma {chroma}; the palette is not grey"
+    assert chroma >= 0.008, f"{token} has chroma {chroma}; that reads as grey, not warm"
+
+
+def test_hues_are_sand_and_clay():
+    css = CSS.read_text(encoding="utf-8")
+    sand = float(re.search(r"--sand:\s*([\d.]+)", css).group(1))
+    clay = float(re.search(r"--clay:\s*([\d.]+)", css).group(1))
+    # 20-100deg in OKLCH is the warm arc: red-orange through to gold.
+    assert 20 <= sand <= 100, f"--sand is {sand}deg, outside the warm arc"
+    assert 20 <= clay <= 100, f"--clay is {clay}deg, outside the warm arc"
+
+
+def test_ink_is_not_pure_black():
+    """True black on cream reads as a hole punched in the paper."""
+    css = CSS.read_text(encoding="utf-8")
+    chroma = float(re.search(r"--text:\s*oklch\([\d.]+%\s+([\d.]+)", css).group(1))
+    assert chroma > 0.01, f"--text chroma is {chroma}; warm ink needs some hue"
 
 
 def test_state_colours_keep_their_hue(tokens):
-    """The one exception, asserted so nobody greys these out for tidiness."""
+    """Asserted so nobody greys these out for tidiness - an error banner that
+    is grey is not an error banner."""
     css = CSS.read_text(encoding="utf-8")
     for token in ("--good", "--warn", "--bad"):
         chroma = float(re.search(rf"{token}:\s*oklch\([\d.]+%\s+([\d.]+)", css).group(1))

@@ -94,7 +94,8 @@
         </svg>
       </div>
       <p>
-        Contact details{% if c.has_resume %} and CV{% endif %} are released to
+        {{ c.public_name }} chose to be listed here, not to be cold-contacted
+        by anyone. Contact details{% if c.has_resume %} and CV{% endif %} go to
         verified employers only, and every release is logged.
       </p>
       <a class="btn" href="/employer">Sign in as an employer to view contact</a>
