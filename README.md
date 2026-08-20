@@ -69,6 +69,22 @@ framework used to:
 Light only, and `color-scheme: light` is pinned so form controls and scrollbars
 don't flip on a machine set to dark.
 
+### Palette
+
+Two hue tokens drive everything. `--olive: 118` carries the page — ground, ink,
+borders, chrome — and `--pink: 355` is reserved for anything that wants a
+click. The ground is olive paper rather than white; cards sit above it in a
+lighter tint of the same hue, which is what creates depth without leaning on
+shadows. Ink is deep olive rather than grey, because neutral grey on a tinted
+ground reads as dirty.
+
+The lightnesses are measured, not eyeballed.
+[tests/test_palette.py](tests/test_palette.py) parses the tokens straight out
+of `style.css`, converts OKLCH → sRGB, and asserts every text pairing clears
+WCAG AA. Pink-on-pale-pink is the tightest pair on the site and initially
+measured 4.41:1 — the accent came down and the soft tint went up until it
+passed. Re-tint the site and the test tells you if you've broken it.
+
 | Route | What it is | Indexed |
 |---|---|---|
 | `GET /` | Landing page, two CTAs | **yes** |
