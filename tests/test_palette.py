@@ -1,11 +1,12 @@
 """WCAG contrast, checked against the stylesheet itself.
 
-The palette is two hue numbers and a column of lightnesses. That makes it very
-easy to re-tint the whole site - and just as easy to push a pairing below AA
-without noticing, because OKLCH lightness is perceptual and contrast is not.
+The palette is a column of OKLCH lightnesses. That makes it very easy to
+restyle the whole site - and just as easy to push a pairing below AA without
+noticing, because OKLCH lightness is perceptual and contrast is not.
 
 These tests parse the real tokens out of style.css and do the arithmetic, so
-changing a token either keeps the site readable or fails the build.
+changing a token either keeps the site readable or fails the build. They also
+pin the brief itself: grey means chroma 0, and the state colours keep theirs.
 """
 
 from __future__ import annotations
@@ -18,8 +19,10 @@ import pytest
 
 CSS = Path(__file__).resolve().parents[1] / "app" / "static" / "style.css"
 
-#: Hue axes, resolved so tokens written as oklch(... var(--olive)) can be read.
-HUES = {"--olive": 118.0, "--pink": 355.0}
+#: Hue axes, for tokens written as oklch(... var(--name)). The monochrome
+#: palette uses literal hues, so this is empty - it stays because a re-tint is
+#: exactly the change these tests exist to catch.
+HUES: dict[str, float] = {}
 
 TOKEN_RE = re.compile(
     r"(--[a-z0-9-]+):\s*oklch\(([\d.]+)%\s+([\d.]+)\s+(var\(--[a-z]+\)|[\d.]+)\)"
@@ -97,17 +100,31 @@ def test_contrast(tokens, label, fg, bg, minimum):
     assert ratio >= minimum, f"{label}: {ratio:.2f}:1, needs {minimum}:1"
 
 
-def test_the_ground_is_not_white(tokens):
-    """The brief was olive, not white. A near-zero-chroma ground would mean
-    someone quietly reverted the palette."""
-    css = CSS.read_text(encoding="utf-8")
-    chroma = float(re.search(r"--bg:\s*oklch\([\d.]+%\s+([\d.]+)", css).group(1))
-    assert chroma >= 0.02, f"--bg chroma is {chroma}, which reads as white"
+#: Everything structural. The state colours are deliberately excluded - an
+#: error banner that is grey is not an error banner.
+NEUTRALS = [
+    "--bg", "--bg-elevated", "--surface", "--surface-2", "--surface-3",
+    "--text", "--text-dim", "--text-faint", "--line", "--line-strong",
+    "--accent", "--accent-hi", "--accent-bright", "--accent-ink",
+    "--accent-soft", "--accent-line",
+]
 
 
-def test_hues_are_olive_and_pink(tokens):
+@pytest.mark.parametrize("token", NEUTRALS)
+def test_palette_is_actually_neutral(token):
+    """The brief is white and grey. Chroma has to be 0, not merely small - a
+    trace of hue is what makes a "grey" UI look faintly dirty or faintly cold,
+    and it is invisible until you put it next to a true grey."""
     css = CSS.read_text(encoding="utf-8")
-    olive = float(re.search(r"--olive:\s*([\d.]+)", css).group(1))
-    pink = float(re.search(r"--pink:\s*([\d.]+)", css).group(1))
-    assert 90 <= olive <= 150, f"--olive is {olive}deg, not a yellow-green"
-    assert pink >= 320 or pink <= 20, f"--pink is {pink}deg, not a pink"
+    match = re.search(rf"{token}:\s*oklch\([\d.]+%\s+([\d.]+)", css)
+    assert match, f"{token} is not defined as an oklch() literal any more"
+    chroma = float(match.group(1))
+    assert chroma == 0, f"{token} has chroma {chroma}; the palette is not grey"
+
+
+def test_state_colours_keep_their_hue(tokens):
+    """The one exception, asserted so nobody greys these out for tidiness."""
+    css = CSS.read_text(encoding="utf-8")
+    for token in ("--good", "--warn", "--bad"):
+        chroma = float(re.search(rf"{token}:\s*oklch\([\d.]+%\s+([\d.]+)", css).group(1))
+        assert chroma > 0.05, f"{token} has been desaturated to {chroma}"

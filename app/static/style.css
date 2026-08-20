@@ -38,49 +38,42 @@
        scrollbars and the canvas flipping dark on a machine set to dark. */
     color-scheme: light;
 
-    /* Two hue axes. Olive carries the page - ground, ink, borders, chrome -
-       and pink is reserved for the things that want a click. Keeping them on
-       separate tokens means the whole site re-tints from these two numbers. */
-    --olive: 118;
-    --pink: 355;
+    /* Monochrome. Chroma is 0 on every neutral, so these are true greys
+       rather than a tinted palette turned down - a trace of hue is what makes
+       a "grey" UI look faintly dirty or faintly cold.
 
-    /* The ground is a warm olive paper, not white. Cards sit above it in a
-       much lighter tint of the same hue, which is what creates depth without
-       leaning on shadows. */
-    --bg:          oklch(95.5% 0.026 var(--olive));
-    --bg-elevated: oklch(99% 0.010 var(--olive));
-    --surface:     oklch(98.4% 0.013 var(--olive));
-    --surface-2:   oklch(93.2% 0.032 var(--olive));
-    --surface-3:   oklch(88.5% 0.040 var(--olive));
+       The one exception is the state colours below. An error banner that is
+       grey is not an error banner. */
+    --bg:          oklch(98.6% 0 0);
+    --bg-elevated: oklch(100% 0 0);
+    --surface:     oklch(100% 0 0);
+    --surface-2:   oklch(96.6% 0 0);
+    --surface-3:   oklch(93% 0 0);
 
-    /* Ink is deep olive rather than grey - a neutral grey on a tinted ground
-       reads as dirty. */
-    --text:        oklch(25% 0.040 var(--olive));
-    --text-dim:    oklch(45% 0.034 var(--olive));
-    --text-faint:  oklch(57% 0.029 var(--olive));
+    --text:        oklch(20% 0 0);
+    --text-dim:    oklch(45% 0 0);
+    --text-faint:  oklch(57.5% 0 0);
 
-    --line:        oklch(87% 0.034 var(--olive));
-    --line-strong: oklch(77.5% 0.045 var(--olive));
+    --line:        oklch(91% 0 0);
+    --line-strong: oklch(82% 0 0);
 
-    /* These four lightnesses are picked, not eyeballed. Pink text on the pale
-       pink pill is the tightest pair on the site; at L 55/94 it measured
-       4.41:1 and missed AA, so the accent came down and the soft tint went up
-       until every pairing cleared 4.5. See the contrast check in the README. */
-    --accent:        oklch(54% 0.200 var(--pink));   /* 4.99:1 on ground     */
-    --accent-hi:     oklch(45% 0.205 352);
-    --accent-bright: oklch(72% 0.170 358);           /* decorative only      */
-    --accent-ink:    oklch(99% 0.012 var(--pink));   /* 5.44:1 on accent     */
-    --accent-soft:   oklch(95.5% 0.038 var(--pink)); /* 4.82:1 under accent  */
-    --accent-line:   oklch(86% 0.090 var(--pink));
+    /* The accent is near-black, not a colour. Buttons and links carry weight
+       through contrast and shape instead of hue. */
+    --accent:        oklch(24% 0 0);
+    --accent-hi:     oklch(14% 0 0);
+    --accent-bright: oklch(45% 0 0);
+    --accent-ink:    oklch(100% 0 0);
+    --accent-soft:   oklch(95% 0 0);
+    --accent-line:   oklch(85% 0 0);
 
-    --good:     oklch(48% 0.14 145);
-    --warn:     oklch(56% 0.14 75);
-    --bad:      oklch(52% 0.20 25);
-    --bad-soft: oklch(94% 0.035 25);
+    /* Restrained, but still recognisably green/amber/red - these carry
+       meaning, so they are the one place hue earns its keep. */
+    --good:     oklch(45% 0.11 150);
+    --warn:     oklch(52% 0.11 75);
+    --bad:      oklch(48% 0.16 25);
+    --bad-soft: oklch(95.5% 0.018 25);
 
-    /* Olive-tinted rather than black, so shadows sit in the palette instead
-       of muddying it. */
-    --shadow-color: oklch(32% 0.07 var(--olive) / 0.14);
+    --shadow-color: oklch(20% 0 0 / 0.10);
     --shadow-sm: 0 1px 2px var(--shadow-color);
     --shadow:    0 1px 2px var(--shadow-color), 0 10px 28px -10px var(--shadow-color);
     --shadow-lg: 0 2px 4px var(--shadow-color), 0 30px 60px -20px var(--shadow-color);
@@ -123,11 +116,7 @@
 
   body {
     margin: 0;
-    background:
-      radial-gradient(900px 420px at 88% -8%, color-mix(in oklab, var(--accent) 7%, transparent), transparent 70%),
-      radial-gradient(760px 380px at 4% 2%, color-mix(in oklab, var(--accent) 4%, transparent), transparent 70%),
-      var(--bg);
-    background-attachment: fixed;
+    background: var(--bg);
     color: var(--text);
     font-family: var(--font);
     font-size: 16px;
@@ -197,7 +186,7 @@
     width: 27px; height: 27px;
     border-radius: 9px;
     display: grid; place-items: center;
-    background: linear-gradient(145deg, var(--accent-bright), var(--accent) 45%, var(--accent-hi));
+    background: linear-gradient(160deg, var(--accent), var(--accent-hi));
     color: var(--accent-ink);
     font-size: 13px; font-weight: 700; letter-spacing: -0.05em;
     box-shadow: var(--shadow-sm);
@@ -268,7 +257,7 @@
     top: -280px; left: 50%;
     width: min(1040px, 132vw); height: 660px;
     translate: -50% 0;
-    background: radial-gradient(closest-side, var(--accent-soft), transparent 72%);
+    background: radial-gradient(closest-side, var(--surface-2), transparent 70%);
     pointer-events: none;
     z-index: -1;
   }
@@ -313,11 +302,7 @@
     max-width: 17ch;
     margin-bottom: 22px;
   }
-  .hero h1 em {
-    font-style: normal;
-    background: linear-gradient(100deg, var(--accent-hi), var(--accent) 55%, var(--accent-bright));
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-  }
+  .hero h1 em { font-style: normal; color: var(--text-faint); }
   .lead {
     font-size: clamp(1.02rem, 1.6vw, 1.2rem);
     color: var(--text-dim);

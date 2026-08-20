@@ -71,19 +71,29 @@ don't flip on a machine set to dark.
 
 ### Palette
 
-Two hue tokens drive everything. `--olive: 118` carries the page — ground, ink,
-borders, chrome — and `--pink: 355` is reserved for anything that wants a
-click. The ground is olive paper rather than white; cards sit above it in a
-lighter tint of the same hue, which is what creates depth without leaning on
-shadows. Ink is deep olive rather than grey, because neutral grey on a tinted
-ground reads as dirty.
+White and grey, and *actually* grey — chroma is `0` on every structural token,
+not merely small. A trace of hue is what makes a "grey" UI look faintly dirty
+or faintly cold, and it's invisible until you put it next to a true grey. The
+accent is near-black (`#1f1f1f`): buttons and links carry weight through
+contrast and shape rather than colour.
 
-The lightnesses are measured, not eyeballed.
+| | |
+|---|---|
+| Ground | `#fafafa` |
+| Cards | `#ffffff` |
+| Borders | `#e1e1e1` |
+| Body text | `#161616` |
+| Secondary | `#555555` |
+| Accent | `#1f1f1f` |
+
+The one exception is the state colours — success, warning, error keep their
+hue, because an error banner that's grey is not an error banner.
+
 [tests/test_palette.py](tests/test_palette.py) parses the tokens straight out
-of `style.css`, converts OKLCH → sRGB, and asserts every text pairing clears
-WCAG AA. Pink-on-pale-pink is the tightest pair on the site and initially
-measured 4.41:1 — the accent came down and the soft tint went up until it
-passed. Re-tint the site and the test tells you if you've broken it.
+of `style.css`, converts OKLCH → sRGB and asserts every text pairing clears
+WCAG AA. It also pins the brief itself: structural tokens must be chroma `0`,
+state colours must keep theirs. Restyle the site and the tests tell you if
+you've broken either.
 
 | Route | What it is | Indexed |
 |---|---|---|
