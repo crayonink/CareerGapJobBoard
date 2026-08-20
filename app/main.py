@@ -42,6 +42,31 @@ async def robots_policy(request: Request, call_next) -> Response:
     return response
 
 
+@app.get("/")
+def index() -> dict:
+    """Placeholder root.
+
+    Not a redirect to /docs: this URL becomes the landing page in step 5, and
+    pointing the site root at an API browser would make /docs the de facto
+    homepage and leave a redirect to unpick later. A small index says what
+    exists without claiming to be the front door.
+    """
+    return {
+        "service": "CareerGapJobBoard",
+        "description": (
+            "Reverse job board. Candidates with employment gaps publish "
+            "profiles; employers browse and reach out."
+        ),
+        "status": "under construction - landing page is build step 5",
+        "routes": {
+            "browse": "/browse",
+            "profile": "/p/{slug}",
+            "docs": "/docs",
+            "health": "/health",
+        },
+    }
+
+
 @app.get("/health", include_in_schema=False)
 def health(session: Annotated[Session, Depends(get_session)]) -> dict:
     """Railway healthcheck target.

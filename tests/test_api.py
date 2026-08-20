@@ -150,3 +150,17 @@ def test_no_route_can_return_contact_details():
             continue
         leaked = banned & set(model.model_fields)
         assert not leaked, f"{route.path} exposes {leaked}"
+
+
+def test_index_lists_what_exists(client):
+    """The root 404 was just a missing route, not a broken deploy - but a 404
+    at the site root reads as "the site is down" to anyone who visits it."""
+    body = client.get("/").json()
+    assert body["service"] == "CareerGapJobBoard"
+    assert body["routes"]["browse"] == "/browse"
+
+
+def test_index_stays_indexable(client):
+    """Guardrail 4: / and /p/{slug} are the two indexable routes, because
+    search traffic is the point. This one becomes the landing page in step 5."""
+    assert "X-Robots-Tag" not in client.get("/").headers
