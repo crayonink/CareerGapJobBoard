@@ -71,30 +71,38 @@ don't flip on a machine set to dark.
 
 ### Palette
 
-Warm and human, on purpose. Publishing a career gap is an exposing thing to
-do, and a cold white product UI makes it feel more like filing a claim than
-telling someone what you've been doing.
-
-Two hue tokens: `--sand: 68` carries the page, `--clay: 40` is the accent. Ink
-is warm brown rather than black — true black on cream reads as a hole punched
-in the paper.
+Loud and flat. Black ink on white paper, 2px ink rules everywhere, zero radius
+on every token, hard offset shadows instead of blur, and buttons that press
+*into* the page on `:active` rather than lifting. Headlines are 900 weight,
+uppercase, `-0.055em`, up to 6rem.
 
 | | |
 |---|---|
-| Ground | `#fff4e8` |
-| Cards | `#fffbf5` |
-| Borders | `#e7d8c9` |
-| Body text | `#2f2017` |
-| Accent | `#ab441b` |
+| Paper | `#f7f7f7` |
+| Cards | `#ffffff` |
+| Rules & ink | `#000000` |
+| Acid | `#f2de11` |
 
-Shapes are rounded (26px on cards), shadows are a soft warm lift rather than a
-hard drop, and anything tappable clears 46px.
+**`--accent` is black, not the acid, and that is load-bearing.** The stylesheet
+uses `--accent` for link and pill *text*, so putting the acid there would mean
+yellow type on white and would fail contrast across the whole site at once. The
+acid lives in `--accent-soft`, which is only ever a background behind black —
+where it measures 15.28:1. [tests/test_palette.py](tests/test_palette.py) pins
+this, because it's exactly the tidy-up someone would make later without
+realising.
 
-[tests/test_palette.py](tests/test_palette.py) parses the tokens straight out
-of `style.css`, converts OKLCH → sRGB and asserts every text pairing clears
-WCAG AA — currently 4.93:1 at the tightest. It also pins the brief: the ground
-must stay warm, ink must not be pure black, and the state colours must keep
-their hue, because an error banner that's grey is not an error banner.
+That file also parses the tokens out of `style.css`, converts OKLCH → sRGB and
+asserts every text pairing clears WCAG AA, plus the brief itself: true black
+ink, zero radius, a 2px minimum rule, and no surviving 1px hairlines.
+
+### Other designs
+
+Both alternatives are tagged, so switching is one checkout:
+
+| Tag | What it is |
+|---|---|
+| `design-loud` | Current. Black, hard rules, acid accent |
+| `design-warm` | Sand ground, clay accent, rounded, soft shadows |
 
 ## Configuration
 
